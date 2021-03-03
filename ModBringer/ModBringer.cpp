@@ -13,7 +13,9 @@ filesystem::path modFolder{ R"(C:/Program Files (x86)\Steam\steamapps\common\Sco
 enum class Options {
     Exit,
     Setup,
-    Modifications
+    Modifications,
+    Maintenance,
+    Help
 };
 
 enum class Modifications {
@@ -45,25 +47,32 @@ int main()
 "| |(_)| || |   | || |   | ||  __ (  |     __)   | |   | (\\ \\) || | ____ |  __)   |     __)\n"
 "| |   | || |   | || |   ) || (  \\ \\ | (\\ (      | |   | | \\   || | \\_  )| (      | (\\ (   \n"
 "| )   ( || (___) || (__/  )| )___) )| ) \\ \\_____) (___| )  \\  || (___) || (____/\\| ) \\ \\__\n"
-"|/     \\|(_______)(______/ |/ \\___/ |/   \\__/\\_______/|/    )_)(_______)(_______/|/   \\__/\n";
+"|/     \\|(_______)(______/ |/ \\___/ |/   \\__/\\_______/|/    )_)(_______)(_______/|/   \\__/\n"
+"by Squiblydoo";
                                                                                           
         //"Nexus OS v1\n" << "Reading floppy...\n" << "Starting 'ModBringer' program.\n";
     Options optionNumber = Options::Exit;
     int selection;
     while (true) {
-        cout << "Type number to section an option.\nOptions\n[0] Exit\n[1] Setup or Update\n[2] Select Modifications \n";
+        cout << "Type number to section an option.\nOptions\n"
+            "[0] Exit\n"
+            "[1] Setup or Update\n"
+            "[2] Select Modifications \n"
+            "[3] ModBringer Maintenance\n
+            "[4] Help\n";
+
         cin >> selection;
         Options userSelected = static_cast<Options>(selection);
 
 
         switch (userSelected) {
         case Options::Exit: {
-            printf("Option 0 selected\nExiting.\n");
+            cout << "Option 0 selected\nExiting.\n";
             std::exit(0);
             break;
 
         } case Options::Setup: {
-            printf("Option 1 selected.\n");
+            cout << "Option 1 selected.\n";
 
             cout << "Creating/Updating Mod Directory: C:/Program Files (x86)\\Steam\\steamapps\\common\\ScourgeBringer\\Content\\Mod\n\n";
             filesystem::path modFolder{ R"(C:/Program Files (x86)\Steam\steamapps\common\ScourgeBringer\Content\Mods)" };
@@ -83,7 +92,7 @@ int main()
             break;
 
         } case Options::Modifications: {
-            printf("Option 2 selected.\n\n");
+            cout << "Option 2 selected.\n\n";
             if (!verifyDirectory(modFolder)) {
                 cout << "Mod directory does not exist. Please perform setup first.\n\n";
                 break;
@@ -176,7 +185,15 @@ int main()
             }
             break;
 
-        } default: {
+        } case Options::Maintenance : {
+            cout << "Option 3 selected\n";
+            break;
+        
+        } case Options::Help : {
+            cout << "Option 4 selected\n";
+            break;
+
+        }default: {
             break;
         }
         }
