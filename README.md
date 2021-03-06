@@ -3,9 +3,12 @@ ModBringer a Mod Loader for the game ScourgeBringer by Flying Oak Games.
 
 ModBringer's only functionality at this time is to provide an interface for managing community made Skins/Texture packs for the game.
 
-At the current time, two skins are a part of ModBringer for ScourgeBringer version 1.52:
+The skins below are compatible with ScourgeBringer v1.52
+
+Included Skins:
 - Rel (the character from the ScourgeBringer prequel comicbook)
 - Yung Venus aka YV (from the game Nuclear Throne by Vlambeer)
+
 Community Skins:
 - Kyhra-Swordless: https://github.com/camoweed/Scourgebringer-Skins/releases/tag/swordless
 - Youmu Konpaku (Touhou): https://github.com/GeneralWziumKenobi/Scourgebringer-Youmu-Skin
