@@ -1,5 +1,5 @@
 # ModBringer
-ModBringer a Mod Loader for the game ScourgeBringer by Flying Oak Games.
+ModBringer a Mod Loader for the game ScourgeBringer by Flying Oak Games. Check out the rules for modding ScourgeBringer here: https://steamcommunity.com/games/1037020/announcements/detail/3012317192167588072
 
 ModBringer's only functionality at this time is to provide an interface for managing community made Skins/Texture packs for the game.
 
@@ -13,10 +13,11 @@ Community Skins:
 - Kyhra-Swordless: https://github.com/camoweed/Scourgebringer-Skins/releases/tag/swordless
 - Youmu Konpaku (Touhou): https://github.com/GeneralWziumKenobi/Scourgebringer-Youmu-Skin
 
+(In order to include a community skin in ModBringer, make a folder for the skin next to the other skins and include the skin in that folder. You will make one folder per skin.)
 
 ModBringer is currently only compatible with Windows, but it is planned to be compatible with other operating systems.
 
-ModBringer hopes to change over time in order to allow for new modifications to be added to the game. 
+ModBringer hopes to change over time in order to allow for new modifications to be added to the game. Very soon, ModBringer will back up more datafiles that can be changed through modding and will back up the player save.
 
 Please follow to keep up with the many updates coming soon.
 
