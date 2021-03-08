@@ -6,6 +6,7 @@
 #include <string>
 #include <map>
 #include <fstream>
+#include <chrono>
 
 
 using namespace std;
@@ -51,6 +52,32 @@ void writeSetting(string str) {
     
 };
 */
+
+void restoreChanged(filesystem::path activeDirectory, filesystem::path backupDirectory) {
+    try {
+
+
+        const auto copyOptions = filesystem::copy_options::overwrite_existing;
+        for (auto const entry : filesystem::directory_iterator(activeDirectory)) {
+            if (entry.path().extension() == ".xnb") {
+                const auto backupEntry = backupDirectory / entry.path().filename().string();
+                const auto backupTimeStamp = filesystem::last_write_time(backupEntry).time_since_epoch();
+                const auto backupTimeMinutes = std::chrono::duration_cast<std::chrono::minutes>(backupTimeStamp).count();
+                const auto entryTimestamp = filesystem::last_write_time(entry).time_since_epoch();
+                const auto entryTimestampMinutes = std::chrono::duration_cast<std::chrono::minutes>(entryTimestamp).count();
+                if (entryTimestamp != backupTimeStamp) {
+                   filesystem::copy(backupEntry, activeDirectory, copyOptions);
+                  cout << "Restoring: " << backupEntry.filename().string() << "\n";
+                }
+            }   
+        }
+    }
+    catch (exception& e) {
+        cout << "Exception " << e.what();
+    }
+
+}
+
 
 int main()
 {
@@ -164,14 +191,18 @@ int main()
 
                 // Creates backups of Catalog files
                 const auto generalBackup = modFolder / "Backups";
-                const auto gameplayMods = modFolder / "GameplayMods"; 
-                const auto gameplayModsBackup = generalBackup / "GameplayModsBackup";
-                const auto tilesetDirectory = modFolder / "Tilesets";
-                const auto tilesetBackupDirectory = generalBackup / "TilesetBackup";
-                const auto otherTextureMods = modFolder / "OtherTextures";
-                const auto otherTextureBackups = generalBackup / "OtherTextures";
-                const auto languageFileMods = modFolder / "LanguageFiles";
-                const auto languageFileBackups = generalBackup / "LanguageFiles";
+                const auto gameplayMods = modFolder / "Gameplay Mods";
+                const auto defaultGameplay = gameplayMods / "Default Gameplay";
+                const auto tilesetDirectory = modFolder / "Tileset Mods";
+                const auto defaultTilesets = tilesetDirectory / "Default Tilesets";
+                const auto bossMods = modFolder / "Boss Mod Images";
+                const auto defaultBosses = bossMods / "Default Bossess";
+                const auto languageFileMods = modFolder / "Language File Mods";
+                const auto defaultLanguageFiles = languageFileMods / "Default Language Files";
+                const auto miscImageMods = modFolder / "Misc Images Mods";
+                const auto defaultMiscImages = miscImageMods / "Default Misc Images";
+                const auto backgroundMods = modFolder / "Background Mods";
+                const auto defaultBackgrounds = backgroundMods / "Default Backgrounds";
 
 
                 if (!exists(generalBackup)) filesystem::create_directory(generalBackup);
@@ -181,54 +212,67 @@ int main()
                 filesystem::path modBringerDirectory = filesystem::current_path();
                 filesystem::current_path(saveDirectory);
                 filesystem::current_path("../../LocalLow/Flying\ Oak\ Games/ScourgeBringer");
-                std::cout << "Current Directory: " << filesystem::current_path();
                 filesystem::copy(filesystem::current_path() / "0.sav", generalBackup);
                 filesystem::current_path(modBringerDirectory);
 
 
                 // Backup Catalog files
-                if (!exists(gameplayModsBackup)) {
+                if (!exists(defaultGameplay)) {
                     filesystem::create_directory(gameplayMods);
-                    filesystem::create_directory(gameplayModsBackup);
+                    filesystem::create_directory(defaultGameplay);
 
                     //  Catalog files don't have an extension but are a regular file
                     for (auto entry : filesystem::directory_iterator(contentFolder)) {
                         if (entry.is_regular_file() && !entry.path().has_extension()) {
-                            filesystem::copy(entry, gameplayModsBackup);
+                            filesystem::copy(entry, defaultGameplay);
                         }
                     };
                 }
 
                 // Backup Tilesets
-                if (!exists(tilesetBackupDirectory)) {
-                    filesystem::create_directory(tilesetBackupDirectory);
-                    for (auto entry : filesystem::directory_iterator(contentFolder / "Tilesets")) {
-                        filesystem::copy(entry, tilesetBackupDirectory);
-                    }
-
-                }
-
-                // Backup various texture files
-                if (!exists(otherTextureBackups)) {
-                    const auto backupCopyOptions = filesystem::copy_options::recursive;
+                if (!exists(defaultTilesets)) {
                     filesystem::create_directory(tilesetDirectory);
-                    const auto bossBackup = generalBackup / "Bosses";
-                    filesystem::copy(contentFolder / "Bosses", bossBackup, copyOptions);
-                    const auto doorBackup = generalBackup / "Doors";
-                    filesystem::copy(contentFolder / "Doors", doorBackup, copyOptions);
-                    const auto backgroundBackup = generalBackup / "Backgrounds";
-                    filesystem::copy(contentFolder / "Backgrounds", backgroundBackup, copyOptions);
-                    
+                    filesystem::create_directory(defaultTilesets);
+                    for (auto entry : filesystem::directory_iterator(contentFolder / "Tilesets")) {
+                        filesystem::copy(entry, defaultTilesets);
+                    }
 
                 }
 
-                //Backup Language files
-                if (!exists(languageFileBackups)) {
-                    filesystem::create_directory(languageFileBackups);
-                    for (auto entry : filesystem::directory_iterator(contentFolder / "Localizations")) {
-                        filesystem::copy(entry, languageFileBackups);
+                // Backup Boss Image Files
+                if (!exists(defaultBosses)) {
+                    filesystem::create_directory(bossMods);
+                    filesystem::create_directory(defaultBosses);
+                    for (auto entry : filesystem::directory_iterator(contentFolder / "Bosses")) {
+                        filesystem::copy(entry, defaultBosses);
                     }
+                }
 
+                // Backup Localization files
+                if (!exists(defaultLanguageFiles)) {
+                    filesystem::create_directory(languageFileMods);
+                    filesystem::create_directory(defaultLanguageFiles);
+                    for (auto entry : filesystem::directory_iterator(contentFolder / "Localizations")) {
+                        filesystem::copy(entry, defaultLanguageFiles);
+                    }
+                }
+
+                // Backup Misc Files
+                if (!exists(defaultMiscImages)) {
+                    filesystem::create_directory(miscImageMods);
+                    filesystem::create_directory(defaultMiscImages);
+                    for (auto entry : filesystem::directory_iterator(contentFolder / "Doors")) {
+                        filesystem::copy(entry, defaultMiscImages);
+                    }
+                }
+
+                // Backup background images
+                if (!exists(defaultBackgrounds)) {
+                    filesystem::create_directory(backgroundMods);
+                    filesystem::create_directory(defaultBackgrounds);
+                    for (auto entry : filesystem::directory_iterator(contentFolder / "Backgrounds")) {
+                        filesystem::copy(entry, defaultBackgrounds);
+                    }
                 }
 
             }
@@ -247,12 +291,16 @@ int main()
                 break;
             };
             if (exists(modFolder)) {
+
+                // Iterate through the possible Mod Categories
                 int entryNum{ 0 };
                 int modSelection;
-
                 std::map<int, string> modTypes;
                 int typeNum{ 0 };
                 for (const auto entry : filesystem::directory_iterator(modFolder)) {
+                    // Exclude the backup folder from the Mod list. It is in this directory for convienance. 
+                    if (entry.path().filename().string() == "Backups") continue;
+
                     cout << "[" << typeNum << "] ";
                     cout << entry.path().filename().string() << "\n";
                     modTypes.emplace(typeNum, entry.path().filename().string());
@@ -276,6 +324,7 @@ int main()
                         }
 
                         if (gameplayModNum == 0) {
+                            // This should not happen due to the backups, but we'll do it anyway.
                             cout << "There are no Gameplay mods available." << endl;
                         }
 
@@ -296,8 +345,8 @@ int main()
 
 
                     //Handle Tileset Selection
-                    if (modTypes.at(modSelection) == "Tilesets") {
-                        auto tilesetDirectory = modFolder / "Tilesets";
+                    if (modTypes.at(modSelection) == "Tileset Mods") {
+                        auto tilesetDirectory = modFolder / modTypes.at(modSelection);
                         std::map<int, string> tilesets;
                         int tilesetNum{ 0 };
                         for (const auto entry : filesystem::directory_iterator(tilesetDirectory)) {
@@ -308,6 +357,7 @@ int main()
                         }
                         
                         if (tilesetNum == 0) {
+                            // This should not happen due to the backups, but we'll do it anyway.
                             cout << "There are no tileset mods available." << endl;
                         }
 
@@ -317,7 +367,26 @@ int main()
                         cin >> tilesetSelection;
                         try {
                             tilesets.at(tilesetSelection);
-                            
+                            cout << "You want to replace the current Tileset with " << tilesets.at(tilesetSelection) << "?\n";
+                            cout << "[y/n] ";
+                            string answer;
+                            cin >> answer;
+                            if (answer == "y") {
+                                cout << "Copying Tileset\n";
+                                const auto replaceOptions = filesystem::copy_options::overwrite_existing;
+                                auto selectedTilesetDirectory = tilesetDirectory / tilesets.at(tilesetSelection);
+                                for (const auto& entry : filesystem::directory_iterator{ selectedTilesetDirectory }) {
+                                    const auto file = filesystem::path(selectedTilesetDirectory / entry);
+                                    if (file.extension() == ".xnb") {
+                                        filesystem::copy(file, modFolder / "../Tilesets", replaceOptions);
+                                        cout << "Copying: " << file.filename().string() << "\n";
+                                    }
+                                };
+
+                            }
+                            else {
+                                cout << "Canceled.\nReturning to main menu.\n\n ";
+                            }
 
                         }
                         catch (std::exception) {
@@ -357,13 +426,21 @@ int main()
 
                                 const auto replaceOptions = filesystem::copy_options::overwrite_existing;
                                 auto selectedSkinDirectory = skinDirectory / skins.at(skinSelection);
-                                for (const auto& entry : filesystem::directory_iterator{ selectedSkinDirectory }) {
-                                    const auto file = filesystem::path(selectedSkinDirectory / entry);
-                                    if (file.extension() == ".xnb") {
-                                        filesystem::copy(file, modFolder/ "..", replaceOptions);
-                                        cout << "Copying: " << file.filename().string() << "\n";
-                                    }
-                                };
+                                auto contentFolder = filesystem::path { R"(C:/Program Files (x86)\Steam\steamapps\common\ScourgeBringer\Content)" };
+                                filesystem::absolute(contentFolder);
+                                const auto defaultSkin = modFolder / "Skins\\Default Skin";
+                                restoreChanged(contentFolder, defaultSkin);
+                                if (selectedSkinDirectory != defaultSkin) {
+                                    for (const auto& entry : filesystem::directory_iterator{ selectedSkinDirectory }) {
+                                        const auto file = filesystem::path(selectedSkinDirectory / entry);
+                                        if (file.extension() == ".xnb") {
+                                            filesystem::copy(file, modFolder / "..", replaceOptions);
+                                            cout << "Copying: " << file.filename().string() << "\n";
+                                        }
+                                    };
+                                
+                                }
+                                
                             }
                             else {
                                 cout << "Canceled.\nReturning to main menu.\n\n ";
