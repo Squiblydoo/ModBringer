@@ -8,9 +8,9 @@ The skins below are compatible with ScourgeBringer v1.52
 Included Skins:
 - Rel (the character from the ScourgeBringer prequel comicbook)
 - Yung Venus aka YV (from the game Nuclear Throne by Vlambeer)
+- Kyhra-Swordless: https://github.com/camoweed/Scourgebringer-Skins/releases/tag/swordless
 
 Community Skins:
-- Kyhra-Swordless: https://github.com/camoweed/Scourgebringer-Skins/releases/tag/swordless
 - Youmu Konpaku (Touhou): https://github.com/GeneralWziumKenobi/Scourgebringer-Youmu-Skin
 
 (In order to include a community skin in ModBringer, make a folder for the skin next to the other skins and include the skin in that folder. You will make one folder per skin.)
@@ -39,10 +39,14 @@ If you want to add your own skin to the launcher for personal use, follow this p
 3. Run ModBringer option 2 "Setup/Update". This will copy the files where they need to go.
 4. Your new skin should now appear in the propper ModBringer menu.
 
+# ModBringer 1.1 Update
+ModBringer now backs up the appropriate files for all modding categories and handles all modding categories.
+ModBringer now has maintenance options.
+
 # Contributing
 If you would like to contribute to ModBringer with content such as Skins and Mods to the offical releases, please issue a request through Github, join the ScourgeBringer Discord, or contact me (Squiblydoo).
 
 If you have problems, stop by the ScourgeBringer discord and let me know or place an issue or pull request.
 
 # Credit
-The work on the Rel and YV skin belong to camoweed_ from the ScourgeBringer Discord.
+The work on the Rel, KyhraSwordless and YV skins belong to camoweed_ from the ScourgeBringer Discord.
