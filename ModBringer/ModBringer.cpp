@@ -18,63 +18,17 @@ enum class Options {
 };
 
 struct Settings {
-    std::filesystem::path gameDirectory;
+    std::filesystem::path gameDirectory ;
+    std::filesystem::path contentDirectory;
 };
 
+bool verifyDirectory(std::filesystem::path directory);
 
-bool verifyDirectory(std::filesystem::path directory) {
-    try {
-        directory.make_preferred();
-        bool result;
-        (!exists(directory)) ? result = false : result = true;
-        return result;
+void restoreChanged(std::filesystem::path activeDirectory, std::filesystem::path backupDirectory, std::string extension);
 
-    }
-    catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what();
-        return false;
-    }
-}
+int getSelection();
 
-void restoreChanged(std::filesystem::path activeDirectory, std::filesystem::path backupDirectory) {
-    try {
-        const auto copyOptions = std::filesystem::copy_options::overwrite_existing;
-        for (auto const entry : std::filesystem::directory_iterator(activeDirectory)) {
-            if (entry.path().extension() == ".xnb") {
-                const auto backupEntry = backupDirectory / entry.path().filename().string();
-                const auto backupTimeStamp = std::filesystem::last_write_time(backupEntry).time_since_epoch();
-                const auto backupTimeMinutes = std::chrono::duration_cast<std::chrono::minutes>(backupTimeStamp).count();
-                const auto entryTimestamp = std::filesystem::last_write_time(entry).time_since_epoch();
-                const auto entryTimestampMinutes = std::chrono::duration_cast<std::chrono::minutes>(entryTimestamp).count();
-                if (entryTimestamp != backupTimeStamp) {
-                   std::filesystem::copy(backupEntry, activeDirectory, copyOptions);
-                  std::cout << "Restoring: " << backupEntry.filename().string() << "\n";
-                }
-            }   
-        }
-    }
-    catch (std::exception& e) {
-        std::cout << "Exception " << e.what();
-    }
-
-}
-
-int getSelection() {
-    int output;
-    std::string input;
-    while (true) {
-        std::cout << "Please make a selection: " << std::endl;
-        std::cin.ignore(100, '\n');
-        std::cin >> input;
-        std::stringstream ss(input);
-
-        if (ss >> output && !(ss >> input)) return output;
-        // Checks for valid conversion to integer and checks for unconverted input
-        std::cin.clear();
-        std::cerr << "\nInvalid input. Please try again.\n";
-
-    }
-}
+void handleModSelection(std::filesystem::path contentPath, std::filesystem::path activeFilePath, std::filesystem::path backupDirectory, std::string fileType, std::map<int, std::string> map, int userSelection);
 
 
 int main()
@@ -96,12 +50,7 @@ int main()
 
 
     // Check for existing configuration file; if it exists, read in the current settings
-    // TO DO:
-    // Check Plausibility of creating a config file using Boost::property_tree and then read and write to tree as needed
-
     const auto modBringer_path = std::filesystem::current_path();
-    //settings.gameDirectory = std::filesystem::path{ R"(C:/Program Files (x86)\Steam\steamapps\common\ScourgeBringer\Content\Mods)" };
-    //std::filesystem::path modFolder = settings.gameDirectory;
 
     if (exists(modBringer_path / "ModBringer.config")) {
         std::ifstream config{ "ModBringer.config" };
@@ -110,13 +59,14 @@ int main()
         std::getline(config, savedGameDirectory);
         savedGameDirectory.erase(remove(savedGameDirectory.begin(), savedGameDirectory.end(), '\"'), savedGameDirectory.end());
         settings.gameDirectory = savedGameDirectory;
+        settings.contentDirectory = settings.gameDirectory / "Content";
         std::cout << "Game Directory: " << savedGameDirectory ;
         std::cout << std::endl;
     }
     
 
     while (true) {
-        std::cout << "Type number to section an option.\nOptions\n"
+        std::cout << "\nType number to section an option.\nOptions\n"
             "[0] Exit\n"
             "[1] Setup or Update\n"
             "[2] Select Modifications \n"
@@ -131,7 +81,7 @@ int main()
         case Options::Exit: {
             std::cout << "Option 0 selected\nExiting." << std::endl;
             std::exit(0);
-            break;
+            continue;
 
         } case Options::Setup: {
             std::cout << "Option 1 selected.\n";
@@ -139,20 +89,15 @@ int main()
 
                 //Check common places first; if they fail, ask the user.
                 auto defaultWindowsPath = std::filesystem::path{ R"(C:\Program Files (x86)\Steam\steamapps\common\ScourgeBringer\)" };
-                auto defaultMacPath = std::filesystem::path{ R"(~/Library/Application\ Support/Steam/steamapps/common/ScourgeBringer)" };
-                    if (verifyDirectory(defaultWindowsPath)) {
+                defaultWindowsPath.make_preferred();
+                 if (verifyDirectory(defaultWindowsPath)) {
                         std::filesystem::path contentFolder = defaultWindowsPath / "Content";
+                        contentFolder.make_preferred();
                         std::ofstream config{ "ModBringer.config", std::ios::out | std::ios::in | std::ios::trunc };
                         config << defaultWindowsPath << std::endl;
-                        settings.gameDirectory = contentFolder;
-                    }
-                    else if (verifyDirectory(defaultMacPath)) {
-                        std::filesystem::path contentFolder = defaultMacPath / "Content";
-                            std::ofstream config{ "ModBringer.config", std::ios::out | std::ios::in | std::ios::trunc };
-                            config << defaultWindowsPath << std::endl;
-                            settings.gameDirectory = contentFolder;
-                    }
-                    else {
+                        settings.gameDirectory = defaultWindowsPath;
+                        settings.contentDirectory = contentFolder;
+                    } else {
                         std::string userProvidedGameDirectory;
                         std::filesystem::path userProvidedPath;
 
@@ -162,22 +107,18 @@ int main()
                             getline(std::cin, userProvidedGameDirectory);
                             userProvidedPath = userProvidedGameDirectory;
                         } while (!verifyDirectory(userProvidedPath));
-                        std::filesystem::path contentFolder = userProvidedPath / "Content";
+                        std::filesystem::path contentFolder = userProvidedPath;
                         std::ofstream config{ "ModBringer.config", std::ios::out | std::ios::in | std::ios::trunc };
                         config << contentFolder << std::endl;
-                        settings.gameDirectory = contentFolder;
+                        settings.gameDirectory = userProvidedPath;
+                        settings.contentDirectory = contentFolder;
                         std::cout << "Saving game Directory\n";
                     };
 
             }
-            // { R"(C:\Program Files (x86)\Steam\steamapps\common\ScourgeBringer\Content)" }
-            
-            
-                // Try to set a directory
-
-            // Check to see if ScourgeBringer is installed on C in the default directory
-            const auto contentFolder = settings.gameDirectory;
-            const auto modFolder = settings.gameDirectory / "Mods";
+           
+            const auto contentFolder = settings.contentDirectory;
+            const auto modFolder = contentFolder / "Mods";
             const auto modFiles = modBringer_path / "Mods";
 
 
@@ -232,9 +173,11 @@ int main()
                 std::filesystem::path saveDirectory = std::filesystem::temp_directory_path();
                 std::filesystem::path modBringerDirectory = std::filesystem::current_path();
                 std::filesystem::current_path(saveDirectory);
-                std::filesystem::current_path("../../LocalLow/Flying\ Oak\ Games/ScourgeBringer");
+                std::filesystem::current_path(R"(../../LocalLow/Flying Oak Games/ScourgeBringer)");
                 std::filesystem::copy(std::filesystem::current_path() / "0.sav", generalBackup);
+                std::cout << "Copy of ScourgeBringer save file created.\n";
                 std::filesystem::current_path(modBringerDirectory);
+
 
 
                 // Backup Catalog files
@@ -248,6 +191,7 @@ int main()
                             std::filesystem::copy(entry, defaultGameplay);
                         }
                     };
+                    std::cout << "Backups of Gameplay files created." << std::endl;
                 }
 
                 // Backup Tilesets
@@ -257,7 +201,7 @@ int main()
                     for (auto entry : std::filesystem::directory_iterator(contentFolder / "Tilesets")) {
                         std::filesystem::copy(entry, defaultTilesets);
                     }
-
+                    std::cout << "Backups of Tilesets created." << std::endl;
                 }
 
                 // Backup Boss Image Files
@@ -267,6 +211,7 @@ int main()
                     for (auto entry : std::filesystem::directory_iterator(contentFolder / "Bosses")) {
                         std::filesystem::copy(entry, defaultBosses);
                     }
+                    std::cout << "Backups of Boss sprites created." << std::endl;
                 }
 
                 // Backup Localization files
@@ -276,6 +221,7 @@ int main()
                     for (auto entry : std::filesystem::directory_iterator(contentFolder / "Localizations")) {
                         std::filesystem::copy(entry, defaultLanguageFiles);
                     }
+                    std::cout << "Backups of Localization files created." << std::endl;
                 }
 
                 // Backup Misc Files
@@ -285,6 +231,7 @@ int main()
                     for (auto entry : std::filesystem::directory_iterator(contentFolder / "Doors")) {
                         std::filesystem::copy(entry, defaultMiscImages);
                     }
+                    std::cout << "Backups of Misc Sprites created." << std::endl;
                 }
 
                 // Backup background images
@@ -294,31 +241,31 @@ int main()
                     for (auto entry : std::filesystem::directory_iterator(contentFolder / "Backgrounds")) {
                         std::filesystem::copy(entry, defaultBackgrounds);
                     }
+                    std::cout << "Backups of Background Sprites created." << std::endl;
                 }
 
             }
 
 
 
-            break;
+            continue;
 
         } case Options::Modifications: {
             std::cout << "Option 2 selected.\n\n";
-            if (!verifyDirectory(settings.gameDirectory / "Mods")) {
+            if (settings.contentDirectory == "" || !verifyDirectory(settings.contentDirectory / "Mods")) {
                 std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
                     << "!!!Mod directory does not exist. Please perform setup first.!!!\n"
                     << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
                     << std::endl;
-                break;
+                continue;
             };
-            if (exists(settings.gameDirectory / "Mods")) {
+            if (exists(settings.contentDirectory / "Mods")) {
 
                 // Iterate through the possible Mod Categories
                 int entryNum{ 0 };
-                //int modSelection;
                 std::map<int, std::string> modTypes;
                 int typeNum{ 0 };
-                for (const auto entry : std::filesystem::directory_iterator(settings.gameDirectory / "Mods")) {
+                for (const auto entry : std::filesystem::directory_iterator(settings.contentDirectory / "Mods")) {
                     // Exclude the backup folder from the Mod list. It is in this directory for convienance. 
                     if (entry.path().filename().string() == "Backups") continue;
 
@@ -329,248 +276,342 @@ int main()
                 }
                 modTypes.emplace(typeNum, "Cancel");
                 std::cout << "[" << typeNum << "] Cancel" << std::endl;
-                
-
-                //std::cout << "Please make a selection.\n";
-                //std::cin >> modSelection ;
                 int modSelection = getSelection();
                 
-
-
                 try {
                     std::cout << modTypes.at(modSelection) << "\n";
 
                     if (modTypes.at(modSelection) == "Cancel") {
                         std::cout << "Canceled.\nReturning to main menu.\n\n ";
-                        break;
+                        continue;
                     }
-
-                    if (modTypes.at(modSelection) == "GameplayMods") {
-                        auto gameplayModDirectory = settings.gameDirectory / "Mods" / "GameplayMods";
-                        std::map<int, std::string> gameplayMods;
-                        int gameplayModNum{ 0 };
-                        for (const auto entry : std::filesystem::directory_iterator(gameplayModDirectory)) {
-                            std::cout << "[" << gameplayModNum << "] ";
-                            std::cout << entry.path().filename().string() << "\n";
-                            gameplayMods.emplace(gameplayModNum, entry.path().filename().string());
-                            gameplayModNum++;
-                        }
-
-                        if (gameplayModNum == 0) {
-                            // This should not happen due to the backups, but we'll do it anyway.
-                            std::cout << "There are no Gameplay mods available." << std::endl;
-                        }
-
-                        std::cout << "[" << gameplayModNum << "] Cancel\n";
-                        int gameplayModSelection;
-                        std::cout << "Please make a selection." << std::endl;
-                        std::cin >> gameplayModSelection;
-                        try {
-                            gameplayMods.at(gameplayModSelection);
-
-
-                        }
-                        catch (std::exception) {
-                            std::cout << "Canceled.\nReturning to main menu.\n\n ";
-                        }
-
+                    // Handle Gameplay Mods
+                    if (modTypes.at(modSelection) == "Gameplay Mods") {
+                        handleModSelection(settings.contentDirectory, settings.contentDirectory, settings.contentDirectory / "Mods" / "Gameplay Mods" / "Default Gameplay", "", modTypes, modSelection);
                     };
-
 
                     //Handle Tileset Selection
                     if (modTypes.at(modSelection) == "Tileset Mods") {
-                        auto tilesetDirectory = settings.gameDirectory / "Mods" / modTypes.at(modSelection);
-                        std::map<int, std::string> tilesets;
-                        int tilesetNum{ 0 };
-                        for (const auto entry : std::filesystem::directory_iterator(tilesetDirectory)) {
-                            std::cout << "[" << tilesetNum << "] ";
-                            std::cout << entry.path().filename().string() << "\n";
-                            tilesets.emplace(tilesetNum, entry.path().filename().string());
-                            tilesetNum++;
-                        }
-                        
-                        if (tilesetNum == 0) {
-                            // This should not happen due to the backups, but we'll do it anyway.
-                            std::cout << "There are no tileset mods available." << std::endl;
-                        }
-
-                        std::cout << "[" << tilesetNum << "] Cancel\n";
-                        int tilesetSelection;
-                        std::cout << "Please make a selection." << std::endl;
-                        std::cin >> tilesetSelection;
-                        try {
-                            tilesets.at(tilesetSelection);
-                            std::cout << "You want to replace the current Tileset with " << tilesets.at(tilesetSelection) << "?\n";
-                            std::cout << "[y/n] ";
-                            std::string answer;
-                            std::cin >> answer;
-                            if (answer == "y") {
-                                std::cout << "Copying Tileset\n";
-                                const auto replaceOptions = std::filesystem::copy_options::overwrite_existing;
-                                auto selectedTilesetDirectory = tilesetDirectory / tilesets.at(tilesetSelection);
-                                auto backupTilesetDirectory = tilesetDirectory / "Default Tilesets";
-                                auto activeTileset = settings.gameDirectory / "Mods" / "../Tilesets";
-                                restoreChanged(activeTileset, backupTilesetDirectory);
-                                if (selectedTilesetDirectory != backupTilesetDirectory) // restoredChange(ap,bp) restored the files, don't copy 
-                                {
-                                    for (const auto& entry : std::filesystem::directory_iterator{ selectedTilesetDirectory }) {
-                                        const auto file = std::filesystem::path(selectedTilesetDirectory / entry);
-                                        if (file.extension() == ".xnb") {
-                                            std::filesystem::copy(file, activeTileset, replaceOptions);
-                                            std::cout << "Copying: " << file.filename().string() << "\n";
-                                        }
-                                    }
-                                };
-
-                            }
-                            else {
-                                std::cout << "Canceled.\nReturning to main menu.\n\n ";
-                            }
-
-                        }
-                        catch (std::exception) {
-                            std::cout << "Canceled.\nReturning to main menu.\n\n ";
-                        }
-
+                        handleModSelection(settings.contentDirectory, settings.contentDirectory / "Tilesets", settings.contentDirectory / "Mods" / "Tileset Mods" / "Default Tilesets", ".xnb", modTypes, modSelection);
                     };
 
                     // Handle Skin Selection
                     if (modTypes.at(modSelection) == "Skins") {
-
-
-                        const auto skinDirectory = settings.gameDirectory / "Mods" / "Skins";
-                        std::cout << "\nSkin options available: \n";
-                        std::map<int, std::string> skins;
-                        int skinNum{ 0 };
-                        for (const auto entry : std::filesystem::directory_iterator(skinDirectory)) {
-                            std::cout << "[" << skinNum << "] ";
-                            std::cout << entry.path().filename().string() << "\n";
-                            skins.emplace(skinNum, entry.path().filename().string());
-                            skinNum++;
-                        }
-
-                        std::cout << "[" << skinNum << "] Cancel\n" ;
-
-                        int skinSelection = getSelection();
-                        try {
-                            skins.at(skinSelection);
-                            std::cout << "You want to replace the current skin with " << skins.at(skinSelection) << "?\n";
-                            std::cout << "[y/n]: ";
-                            std::string answer;
-                            std::cin >> answer;
-                            if (answer == "y") {
-                                std::cout << "Copying skin.\n";
-
-                                const auto replaceOptions = std::filesystem::copy_options::overwrite_existing;
-                                auto selectedSkinDirectory = skinDirectory / skins.at(skinSelection);
-                                auto contentFolder = settings.gameDirectory / "Mods" / "..";
-                                std::filesystem::absolute(contentFolder);
-                                const auto defaultSkin = settings.gameDirectory / "Mods" / "Skins\\Default Skin";
-                                restoreChanged(contentFolder, defaultSkin);
-                                if (selectedSkinDirectory != defaultSkin) { // restoredChange(ap,bp) restored the files, don't copy
-                                    for (const auto& entry : std::filesystem::directory_iterator{ selectedSkinDirectory }) {
-                                        const auto file = std::filesystem::path(selectedSkinDirectory / entry);
-                                        if (file.extension() == ".xnb") {
-                                            std::filesystem::copy(file, settings.gameDirectory / "Mods" / "..", replaceOptions);
-                                            std::cout << "Copying: " << file.filename().string() << "\n";
-                                        }
-                                    };
-                                
-                                }
-                                
-                            }
-                            else {
-                                std::cout << "Canceled.\nReturning to main menu.\n\n ";
-                            }
-                        }
-                        catch (std::exception&) {
-                            std::cout << "Canceled.\nReturning to main menu.\n\n ";
-                        }
+                        handleModSelection(settings.contentDirectory, settings.contentDirectory, settings.contentDirectory / "Mods" / "Skins" / "Default Skin", ".xnb", modTypes, modSelection);
                     }
-                
-                
-                
+
+                    // Handle Background Mods
+                    if (modTypes.at(modSelection) == "Background Mods") {
+                        handleModSelection(settings.contentDirectory, settings.contentDirectory / "Backgrounds", settings.contentDirectory / "Mods" / "Background Mods" / "Default Backgrounds", ".xnb", modTypes, modSelection);
+                    }
+
+                    // Handle Misc Images Mods
+                    if (modTypes.at(modSelection) == "Misc Images Mods") {
+                        handleModSelection(settings.contentDirectory, settings.contentDirectory / "Doors", settings.contentDirectory / "Mods" / "Misc Images Mods" / "Default Misc Images", ".xnb", modTypes, modSelection);
+                    }
+
+                    // Handle Language File Mods
+                    if (modTypes.at(modSelection) == "Language File Mods") {
+                        handleModSelection(settings.contentDirectory, settings.contentDirectory / "Localizations", settings.contentDirectory / "Mods" / "Language File Mods" / "Default Language Files", "", modTypes, modSelection);
+                    }
+
+                    // Handle Boss Mod Images
+                    if (modTypes.at(modSelection) == "Boss Mod Images") {
+                        handleModSelection(settings.contentDirectory, settings.contentDirectory / "Bosses", settings.contentDirectory / "Mods" / "Boss Mod Images" / "Default Bossess", ".xnb", modTypes, modSelection);
+                    }
+
                 }
                 catch (std::exception& e) {
                     std::cout << "Exception: " << e.what();
                 }
 
             }
-            break;
+            continue;
 
         } case Options::Maintenance : {
             std::cout << "Option 3 selected\n";
 
-                if (!verifyDirectory(settings.gameDirectory / "Mods")) {
+                if (settings.contentDirectory == "" || !verifyDirectory(settings.contentDirectory / "Mods")) {
                     std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
                         << "!!!Mod directory does not exist. Please perform setup first.!!!\n"
                         << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
                         << std::endl;
-                    break;
+                    continue;
                 }
 
-                std::cout << "[0] Return to main menu\n"
-                    << "[1] Delete Mod Folder\n"
-                    << "[2] Restore Save file to point before ModBringer was installed\n"
-                    << "[3] Restore to default game\n"
-                    << "[4] Specify different game directory\n"
+                std::cout << "[0] Delete Mod Folder\n"
+                    << "[1] Restore Save file to point before ModBringer was installed\n"
+                    << "[2] Restore to default game\n"
+                    << "[3] Specify different game directory\n"
+                    << "[4] Cancel\n"
                     << std::endl;
                 int maintenanceSelection = getSelection();
-                if (maintenanceSelection == 0) { //Return to main menu.
 
-                    break;
+                switch (maintenanceSelection) {
+                case (0): {
+                    std::cout << "You want to remove the Mod Folder and all mods?\nThis will also restore all game files to their original state before mods.\n";
+                    std::cout << "[y/n]: ";
+                    std::string answer;
+                    std::cin >> answer;
+                    if (answer == "y") {
+                        std::cout << "Restoring Gameplay files \n";
+                        restoreChanged(settings.contentDirectory, settings.contentDirectory / "Mods" / "Gameplay Mods" / "Default Gameplay", "");
+                        std::cout << "Restoring Tilesets \n";
+                        restoreChanged(settings.contentDirectory / "Tilesets", settings.contentDirectory / "Mods" / "Tileset Mods" / "Default Tilesets", ".xnb");
+                        std::cout << "Restoring changed Skins\n";
+                        restoreChanged(settings.contentDirectory, settings.contentDirectory / "Mods" / "Skins" / "Default Skin", ".xnb");
+                        std::cout << "Restoring changed backgrounds\n";
+                        restoreChanged(settings.contentDirectory / "Backgrounds", settings.contentDirectory / "Mods" / "Background Mods" / "Default Backgrounds", ".xnb");
+                        std::cout << "Restoring changed Misc Images\n";
+                        restoreChanged(settings.contentDirectory / "Doors", settings.contentDirectory / "Mods" / "Misc Images Mods" / "Default Misc Images", ".xnb");
+                        std::cout << "Restoring changed Language Files\n";
+                        restoreChanged(settings.contentDirectory / "Localizations", settings.contentDirectory / "Mods" / "Language File Mods" / "Default Language Files", "");
+                        std::cout << "Restoring changed Bosses\n";
+                        restoreChanged(settings.contentDirectory / "Bosses", settings.contentDirectory / "Mods" / "Boss Mod Images" / "Default Bossess", ".xnb");
+
+                        std::cout << "Removing Mod Folder.\n To use Mods again, run Setup from the main menu." << std::endl;
+                        std::filesystem::remove_all(settings.contentDirectory / "Mods");
+                    }
+                    else {
+                        std::cout << "Canceled.\nReturning to main menu.\n\n ";
+                    }
+                    continue;
                 }
-            if (maintenanceSelection == 1) { // Delete Mod folder.
-                std::cout << "You want to remove the Mod Folder and all mods?\n";
-                std::cout << "[y/n]: ";
-                std::string answer;
-                std::cin >> answer;
-                if (answer == "y") {
-                    // TO DO:
-                    // Ask the user if they want all backups put back in place
-                    // This will include their Save File  
-                    std::cout << "Removing Mod Folder.\n To use Mods again, run Setup from the main menu." << std::endl;
-                    std::filesystem::remove_all(settings.gameDirectory / "Mods");
+                case (1): { // Restore Save file
+                    std::cout << "Use this only if your save is corrupted and you need to write over your current save.\n"
+                        << "This should be unlikely, but could happen if the Gameplay Mods are incompatible with your save.\n"
+                        << "Do you want to restore your save to what it was before you installed ModBringer?\n";
+                    std::cout << "[y/n]: ";
+                    std::string answer;
+                    std::cin >> answer;
+                    if (answer == "y") {
+                        std::filesystem::path generalBackup = settings.contentDirectory / "Mods" / "Backup";
+                        std::filesystem::path saveDirectory = std::filesystem::temp_directory_path();
+                        std::filesystem::path modBringerDirectory = std::filesystem::current_path();
+                        std::filesystem::current_path(saveDirectory);
+                        std::filesystem::current_path(R"(../../LocalLow/Flying Oak Games/ScourgeBringer)");
+                        if (exists(generalBackup / "0.sav") && exists(std::filesystem::current_path() / "0.sav")) {
+                            std::filesystem::copy(generalBackup / "0.sav", std::filesystem::current_path() / "0.sav");
+                            std::cout << "Copy of ScourgeBringer save file created.\n";
+                            std::filesystem::current_path(modBringerDirectory);
+                            std::cout << "Backup restored.\n";
+                        }
+                        
+                    }
+                    else {
+                        std::cout << "Canceled.\nReturning to main menu.\n\n ";
+                    }
+                    continue;
                 }
-                else {
-                    std::cout << "Canceled.\nReturning to main menu.\n\n ";
+                case (2): { // Restore Game Files
+                    std::cout << "You want to restore all game files to an unmodded state?\n";
+                    std::cout << "[y/n]: ";
+                    std::string answer;
+                    std::cin >> answer;
+                    if (answer == "y") {
+                        std::cout << "Restoring Gameplay files \n";
+                        restoreChanged(settings.contentDirectory, settings.contentDirectory / "Mods" / "Gameplay Mods" / "Default Gameplay", "");
+                        std::cout << "Restoring Tilesets \n";
+                        restoreChanged(settings.contentDirectory / "Tilesets", settings.contentDirectory / "Mods" / "Tileset Mods" / "Default Tilesets", ".xnb");
+                        std::cout << "Restoring changed Skins\n";
+                        restoreChanged(settings.contentDirectory, settings.contentDirectory / "Mods" / "Skins" / "Default Skin", ".xnb");
+                        std::cout << "Restoring changed backgrounds\n";
+                        restoreChanged(settings.contentDirectory / "Backgrounds", settings.contentDirectory / "Mods" / "Background Mods" / "Default Backgrounds", ".xnb");
+                        std::cout << "Restoring changed Misc Images\n";
+                        restoreChanged(settings.contentDirectory / "Doors", settings.contentDirectory / "Mods" / "Misc Images Mods" / "Default Misc Images", ".xnb");
+                        std::cout << "Restoring changed Language Files\n"; 
+                        restoreChanged(settings.contentDirectory / "Localizations", settings.contentDirectory / "Mods" / "Language File Mods" / "Default Language Files","");
+                        std::cout << "Restoring changed Bosses\n";
+                        restoreChanged(settings.contentDirectory / "Bosses", settings.contentDirectory / "Mods" / "Boss Mod Images" / "Default Bossess", ".xnb");
+
+                    }
+                    else {
+                        std::cout << "Canceled.\nReturning to main menu.\n\n ";
+                    }
+                    continue;
                 }
-            }
+                case (3): {
+                    std::string userProvidedGameDirectory;
+                    std::filesystem::path userProvidedPath;
+                    do {
+                        std::cout << "Please specify game directory:\nExample:\nC:\\Program Files (x86)\\Steam\\steamapps\\common\\ScourgeBringer\n";
+                        std::cin.ignore(100, '\n');
+                        getline(std::cin, userProvidedGameDirectory);
+                        userProvidedPath = userProvidedGameDirectory;
+                    } while (!verifyDirectory(userProvidedPath));
+                    std::filesystem::path contentFolder = userProvidedPath;
+                    std::ofstream config{ "ModBringer.config", std::ios::out | std::ios::in | std::ios::trunc };
+                    config << contentFolder << std::endl;
+                    settings.gameDirectory = userProvidedPath;
+                    settings.contentDirectory = contentFolder;
+                    std::cout << "Saving game Directory\n";
+                    continue;
+                }
+                case (4): {
+                    // User canceled.
+                    std::cout << "Cancelled. Returning to main menu.\n\n";
+                    continue;
+                } 
+                default: {
+
+                    continue;
+                }
+                };
+               
 
             
-            break;
+            continue;
         
         } case Options::Help : {
             std::cout << "Option 4 selected\n";
             std::cout << "Help topics:\n"
-                << "[0] Return to main menu\n"
-                << "[1] About ModBringer\n" 
-                << "[2] How to Add New Mods\n"
-                << "[3] How to fix broken save\n"
+                << "[0] About ModBringer\n"
+                << "[1] How to Add New Mods\n" 
+                << "[2] How to fix broken save\n"
+                << "[3] Cancel\n"
                 << std::endl;
 
             int helpSelection = getSelection();
 
             switch (helpSelection) {
-            case (0): { // Return to Main Menu
-                
+            case (0): { // About ModBringer
+                std::cout << "ModBringer was created by Squiblydoo and written in C++\n"
+                    << "If you want to know more, you can contact Squiblydoo through the ScourgeBringer Discord or\n"
+                    << "review the ModBringer code on GitHub." << std::endl;
                 continue;
+            } 
+            case (1): { // How to add New Mods
+                std::cout << "In order to add new mods, put downloaded files into the 'Mods' folder next to\n"
+                    << "the ModBringer.exe. The Mod needs to be put in a folder, in the appropriate category.\n"
+                    << "ModBringer comes with a few mods automatically. These mods are examples of how to put\n"
+                    << "downloaded mods into the appropriate folders.\n"
+                    << "After you put the downloaded mod into a folder, run 'Setup' from the main menu." << std::endl;
 
-            } case (1): {
-                // TO DO: Provide useful information here.
-
-                break;
-            } default: {
+                continue;
+            } 
+            case (2) :{ // How to fix broken save
+                std::cout << "It is unlikely, but possible, that your save could become broken due to Gameplay Mods.\n"
+                    << "This can happen in instances where the save data does not match Gameplay files: for example,\n"
+                    << "if you uninstall or install a Gameplay Mod while in the middle of a ScourgeBringer run, then\n"
+                    << "the data loaded by the save will be unpredictable and may cause unpredictable behavior.\n"
+                    << "This can be avoided by not loading Gameplay Mods while the game is during in a run.\n"
+                    << "To restore the save file, use the Restore Save File option in the Maintenance menu.\n\n"
+                    << "You may also find it wise to back up your save periodically or before trying Gameplay Mods.\n"
+                    << "If you use the ModBringer option to restore your save, any data or progress between the time\n"
+                    << "that you restore the save and the time that you installed ModBringer, will be lost. This is\n"
+                    << "because ModBringer only makes a backup of your save when you install ModBringer. Since,\n"
+                    << "mods could cause unexpected behavior, ModBringer cannot make more frequent saves and an\n"
+                    << "old save is better than none.\n" << std::endl;
+                continue;
+            } 
+            case (3) :{ // User canceled.
+                std::cout << "Cancelled. Returning to main menu.\n\n";
+                continue;
+            } 
+                    default: {
                 // Invalid section made
-                break;
+                continue;
             }
             }
 
-            break;
+            continue;
 
         }default: {
-            break;
+            continue;
         }
         }
     };
+}
+
+void restoreChanged(std::filesystem::path activeDirectory, std::filesystem::path backupDirectory, std::string extension) {
+    try {
+        const auto copyOptions = std::filesystem::copy_options::overwrite_existing;
+        for (auto const entry : std::filesystem::directory_iterator(activeDirectory)) {
+            if (entry.is_regular_file() && entry.path().extension() == extension) {
+                const auto backupEntry = backupDirectory / entry.path().filename().string();
+                const auto backupTimeStamp = std::filesystem::last_write_time(backupEntry).time_since_epoch();
+                const auto backupTimeMinutes = std::chrono::duration_cast<std::chrono::minutes>(backupTimeStamp).count();
+                const auto entryTimestamp = std::filesystem::last_write_time(entry).time_since_epoch();
+                const auto entryTimestampMinutes = std::chrono::duration_cast<std::chrono::minutes>(entryTimestamp).count();
+                if (entryTimestamp != backupTimeStamp) {
+                    std::filesystem::copy(backupEntry, activeDirectory, copyOptions);
+                    std::cout << "Restoring: " << backupEntry.filename().string() << "\n";
+                }
+            }
+        }
+    }
+    catch (std::exception& e) {
+        std::cout << "Exception " << e.what() << std::endl;
+    }
+
+}
+
+bool verifyDirectory(std::filesystem::path directory) {
+    try {
+        directory.make_preferred();
+        bool result;
+        (!exists(directory)) ? result = false : result = true;
+        return result;
+
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what();
+        return false;
+    }
+}
+
+void handleModSelection(std::filesystem::path contentPath, std::filesystem::path activeFilePath, std::filesystem::path backupDirectory, std::string fileType, std::map<int, std::string> map, int userSelection) {
+    //Get Mod Category
+    auto selectedModDirectory = contentPath / "Mods" / map.at(userSelection);
+    std::map<int, std::string> modListing;
+    int modNumber{};
+    for (const auto entry : std::filesystem::directory_iterator(selectedModDirectory)) {
+        std::cout << "[" << modNumber << "] ";
+        std::cout << entry.path().filename().string() << "\n";
+        modListing.emplace(modNumber, entry.path().filename().string());
+        modNumber++;
+    }
+    std::cout << "[" << modNumber << "] Cancel\n";
+    int modSelection{};
+    modSelection = getSelection();
+    try {
+        std::cout << "You want to replace the current " << map.at(userSelection) << " with " << modListing.at(modSelection) << "?\n";
+        std::cout << "[y/n] ";
+        std::string answer;
+        std::cin >> answer;
+        if (answer == "y") {
+            const auto replaceOptions = std::filesystem::copy_options::overwrite_existing;
+            auto selectedMod = selectedModDirectory / modListing.at(modSelection);
+            restoreChanged(activeFilePath, backupDirectory, fileType); // Gameplay files have no extension
+            if (selectedMod != backupDirectory) // restoredChange(ap,bp) restored the files, don't copy 
+            {
+                for (const auto& entry : std::filesystem::directory_iterator{ selectedMod }) {
+                    const auto file = std::filesystem::path(selectedMod / entry);
+                    std::filesystem::copy(file, activeFilePath, replaceOptions);
+                    std::cout << "Copying: " << file.filename().string() << "\n";
+                }
+            };
+        }
+    }
+    catch (std::exception) {
+        std::cout << "Canceled.\nReturning to main menu.\n\n ";
+    }
+
+}
+
+int getSelection() {
+    int output;
+    std::string input;
+    while (true) {
+        std::cout << "Please make a selection: " << std::endl;
+        std::cin.ignore(100, '\n');
+        std::cin >> input;
+        std::stringstream ss(input);
+
+        if (ss >> output && !(ss >> input)) return output;
+        // Checks for valid conversion to integer and checks for unconverted input
+        std::cin.clear();
+        std::cerr << "\nInvalid input. Please try again.\n";
+
+    }
 }
