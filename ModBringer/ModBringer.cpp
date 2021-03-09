@@ -478,6 +478,8 @@ int main()
                 std::cout << "ModBringer was created by Squiblydoo and written in C++\n"
                     << "If you want to know more, you can contact Squiblydoo through the ScourgeBringer Discord or\n"
                     << "review the ModBringer code on GitHub." << std::endl;
+
+                system("pause");
                 continue;
             } 
             case (1): { // How to add New Mods
@@ -486,6 +488,8 @@ int main()
                     << "ModBringer comes with a few mods automatically. These mods are examples of how to put\n"
                     << "downloaded mods into the appropriate folders.\n"
                     << "After you put the downloaded mod into a folder, run 'Setup' from the main menu." << std::endl;
+
+                system("pause");
 
                 continue;
             } 
@@ -502,6 +506,7 @@ int main()
                     << "because ModBringer only makes a backup of your save when you install ModBringer. Since,\n"
                     << "mods could cause unexpected behavior, ModBringer cannot make more frequent saves and an\n"
                     << "old save is better than none.\n" << std::endl;
+                system("pause");
                 continue;
             } 
             case (3) :{ // User canceled.
