@@ -10,11 +10,11 @@
 #include <chrono>
 
 enum class Options {
-    Exit,
     Setup,
     Modifications,
     Maintenance,
-    Help
+    Help,
+    Exit
 };
 
 struct Settings {
@@ -67,11 +67,11 @@ int main()
 
     while (true) {
         std::cout << "\nType number to section an option.\nOptions\n"
-            "[0] Exit\n"
-            "[1] Setup or Update\n"
-            "[2] Select Modifications \n"
-            "[3] ModBringer Maintenance\n"
-            "[4] Help" << std::endl;
+            "[0] Setup or Update\n"
+            "[1] Select Modifications \n"
+            "[2] ModBringer Maintenance\n"
+            "[3] Help\n" 
+            "[4] Exit\n" << std::endl;
 
         std::cin >> selection;
         Options userSelected = static_cast<Options>(selection);
@@ -79,12 +79,12 @@ int main()
 
         switch (userSelected) {
         case Options::Exit: {
-            std::cout << "Option 0 selected\nExiting." << std::endl;
+            std::cout << "Option " << selection << " selected\nExiting." << std::endl;
             std::exit(0);
             continue;
 
         } case Options::Setup: {
-            std::cout << "Option 1 selected.\n";
+            std::cout << "Option " << selection << " selected\n";
             if (!verifyDirectory(settings.gameDirectory)) { // Game directory not set
 
                 //Check common places first; if they fail, ask the user.
@@ -385,14 +385,14 @@ int main()
                     std::string answer;
                     std::cin >> answer;
                     if (answer == "y") {
-                        std::filesystem::path generalBackup = settings.contentDirectory / "Mods" / "Backup";
+                        std::filesystem::path generalBackup = settings.contentDirectory / "Mods" / "Backups";
                         std::filesystem::path saveDirectory = std::filesystem::temp_directory_path();
                         std::filesystem::path modBringerDirectory = std::filesystem::current_path();
                         std::filesystem::current_path(saveDirectory);
                         std::filesystem::current_path(R"(../../LocalLow/Flying Oak Games/ScourgeBringer)");
+                        auto replaceOptions = std::filesystem::copy_options::overwrite_existing;
                         if (exists(generalBackup / "0.sav") && exists(std::filesystem::current_path() / "0.sav")) {
-                            std::filesystem::copy(generalBackup / "0.sav", std::filesystem::current_path() / "0.sav");
-                            std::cout << "Copy of ScourgeBringer save file created.\n";
+                            std::filesystem::copy(generalBackup / "0.sav", std::filesystem::current_path() / "0.sav", replaceOptions);
                             std::filesystem::current_path(modBringerDirectory);
                             std::cout << "Backup restored.\n";
                         }
