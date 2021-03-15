@@ -43,6 +43,8 @@ If you want to add your own skin to the launcher for personal use, follow this p
 ModBringer now backs up the appropriate files for all modding categories and handles all modding categories.
 ModBringer now has maintenance options.
 
+Minor Update: I updated the skins in the Repository but not in the release. These updated skins are identical graphically, but they use MGCB (MonoGame Content Builder) for compressing the XNB for use by the game. We had previously been using https://github.com/LeonBlade/xnbcli, but the XNB files were usually 16K KB. With MGCB they are ~200 KB in size.
+
 # Contributing
 If you would like to contribute to ModBringer with content such as Skins and Mods to the offical releases, please issue a request through Github, join the ScourgeBringer Discord, or contact me (Squiblydoo).
 
