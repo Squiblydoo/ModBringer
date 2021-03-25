@@ -1,7 +1,7 @@
 # ModBringer
 ModBringer a Mod Loader for the game ScourgeBringer by Flying Oak Games. Check out the rules for modding ScourgeBringer here: https://steamcommunity.com/games/1037020/announcements/detail/3012317192167588072
 
-ModBringer's only functionality at this time is to provide an interface for managing community made Skins/Texture packs for the game.
+ModBringer provides an interface for managing community made Skins/Texture and Game Catalog files. 
 
 The skins below are compatible with ScourgeBringer v1.52
 
