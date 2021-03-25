@@ -12,6 +12,10 @@ Included Skins:
 
 Community Skins:
 - Youmu Konpaku (Touhou): https://github.com/GeneralWziumKenobi/Scourgebringer-Youmu-Skin
+- Crewmate(?) (Among Us): https://github.com/MaximusG29/SusBringer/releases/tag/1.0
+
+Tileset Texturepack
+- Touhou Tileset pack - https://github.com/GeneralWziumKenobi/Scourgebringer-Touhou-Tileset-Pack
 
 (In order to include a community skin in ModBringer, make a folder for the skin next to the other skins and include the skin in that folder. You will make one folder per skin.)
 
