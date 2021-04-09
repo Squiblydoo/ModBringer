@@ -21,10 +21,6 @@ Tileset Texturepack
 
 ModBringer is currently only compatible with Windows, but it is planned to be compatible with other operating systems.
 
-ModBringer hopes to change over time in order to allow for new modifications to be added to the game. Very soon, ModBringer will back up more datafiles that can be changed through modding and will back up the player save.
-
-Please follow to keep up with the many updates coming soon.
-
 # Usage
 1. Download the latest release (e.g Windowsx86-ModBringer-Release.zip) https://github.com/Squiblydoo/ModBringer/releases/
 2. Unzip the files.
@@ -53,6 +49,9 @@ Minor Update: I updated the skins in the Repository but not in the release. Thes
 If you would like to contribute to ModBringer with content such as Skins and Mods to the offical releases, please issue a request through Github, join the ScourgeBringer Discord, or contact me (Squiblydoo).
 
 If you have problems, stop by the ScourgeBringer discord and let me know or place an issue or pull request.
+
+# License
+BSD-3
 
 # Credit
 The work on the Rel, KyhraSwordless and YV skins belong to camoweed_ from the ScourgeBringer Discord.
