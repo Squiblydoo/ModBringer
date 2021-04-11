@@ -8,6 +8,10 @@
 #include <fstream>
 #include <sstream>
 #include <chrono>
+#include <stdio.h>
+// MSVC complains about std::getenv right now we are disabling the warning
+// std::getenv is only used when the OS is Macintosh
+#pragma warning(disable : 4996) 
 
 enum class Options {
     Setup,
@@ -18,8 +22,9 @@ enum class Options {
 };
 
 struct Settings {
-    std::filesystem::path gameDirectory ;
+    std::filesystem::path gameDirectory;
     std::filesystem::path contentDirectory;
+    std::string operatingSystem{};
 };
 
 bool verifyDirectory(std::filesystem::path directory);
@@ -43,10 +48,18 @@ int main()
         "| )   ( || (___) || (__/  )| )___) )| ) \\ \\_____) (___| )  \\  || (___) || (____/\\| ) \\ \\__\n"
         "|/     \\|(_______)(______/ |/ \\___/ |/   \\__/\\_______/|/    )_)(_______)(_______/|/   \\__/\n"
         "by Squiblydoo\n" << std::endl;
-                                                                                          
-    Options optionNumber = Options::Exit;
-    int selection;
+
+    // Detect Operating System
     Settings settings;
+#ifdef _WIN32 || _WIN64
+    settings.operatingSystem = "Windows";
+#elif __APPLE__ || __MACH__
+    settings.operatingSystem = "Macintosh";
+#endif
+
+    int selection;
+
+
 
 
     // Check for existing configuration file; if it exists, read in the current settings
@@ -60,7 +73,8 @@ int main()
         savedGameDirectory.erase(remove(savedGameDirectory.begin(), savedGameDirectory.end(), '\"'), savedGameDirectory.end());
         settings.gameDirectory = savedGameDirectory;
         settings.contentDirectory = settings.gameDirectory / "Content";
-        std::cout << "Game Directory: " << savedGameDirectory ;
+        std::cout << "Game Directory: " << savedGameDirectory << "\n";
+        std::cout << "Operating System: " << settings.operatingSystem;
         std::cout << std::endl;
     }
     
@@ -81,23 +95,25 @@ int main()
         case Options::Exit: {
             std::cout << "Option " << selection << " selected\nExiting." << std::endl;
             std::exit(0);
-            continue;
 
         } case Options::Setup: {
             std::cout << "Option " << selection << " selected\n";
             if (!verifyDirectory(settings.gameDirectory)) { // Game directory not set
 
                 //Check common places first; if they fail, ask the user.
-                auto defaultWindowsPath = std::filesystem::path{ R"(C:\Program Files (x86)\Steam\steamapps\common\ScourgeBringer\)" };
-                defaultWindowsPath.make_preferred();
-                 if (verifyDirectory(defaultWindowsPath)) {
+                if (settings.operatingSystem == "Windows") {
+
+                    auto defaultWindowsPath = std::filesystem::path{ R"(C:\Program Files (x86)\Steam\steamapps\common\ScourgeBringer\)" };
+                    if (verifyDirectory(defaultWindowsPath)) {
                         std::filesystem::path contentFolder = defaultWindowsPath / "Content";
                         contentFolder.make_preferred();
                         std::ofstream config{ "ModBringer.config", std::ios::out | std::ios::in | std::ios::trunc };
                         config << defaultWindowsPath << std::endl;
                         settings.gameDirectory = defaultWindowsPath;
                         settings.contentDirectory = contentFolder;
-                    } else {
+                        settings.operatingSystem = "Windows";
+                    }   
+                    else {
                         std::string userProvidedGameDirectory;
                         std::filesystem::path userProvidedPath;
 
@@ -114,9 +130,30 @@ int main()
                         settings.contentDirectory = contentFolder;
                         std::cout << "Saving game Directory\n";
                     };
+                }
+                else if (settings.operatingSystem == "Macintosh") {
+                    
+                    auto home = std::getenv("HOME");
+                    auto directory = std::filesystem::path{ home };
+                    std::filesystem::path defaultMacPath = directory / "Library/Application Support/Steam/steamapps/common/ScourgeBringer/ScourgeBringer.app/Contents/Resources/";
+                
+                    if (verifyDirectory(defaultMacPath)) {
+                        std::filesystem::path contentFolder = defaultMacPath / "Content";
+                        contentFolder.make_preferred();
+                        std::ofstream config{ "ModBringer.config", std::ios::out | std::ios::in | std::ios::trunc };
+                        config << defaultMacPath << std::endl;
+                        settings.gameDirectory = defaultMacPath;
+                        settings.contentDirectory = contentFolder;
+                        settings.operatingSystem = "Macintosh";
+
+                    }
+                
+                }
+               
+             
 
             }
-           
+
             const auto contentFolder = settings.contentDirectory;
             const auto modFolder = contentFolder / "Mods";
             const auto modFiles = modBringer_path / "Mods";
@@ -129,47 +166,103 @@ int main()
             }
 
 
-            // Ensure backups of original skins exist
-            const auto skinDirectory = modFolder / "Skins";
-            const auto backupDirectory = skinDirectory / "Default Skin";
+            // Setup for backing up original gamefiles
+            const auto backupSkinDirectory = modFolder / "Skins/Default Skin";
+            const auto generalBackup = modFolder / "Backups";
+            const auto gameplayMods = modFolder / "Gameplay Mods";
+            const auto defaultGameplay = gameplayMods / "Default Gameplay";
+            const auto tilesetDirectory = modFolder / "Tileset Mods";
+            const auto defaultTilesets = tilesetDirectory / "Default Tilesets";
+            const auto bossMods = modFolder / "Boss Mod Images";
+            const auto defaultBosses = bossMods / "Default Bossess";
+            const auto languageFileMods = modFolder / "Language File Mods";
+            const auto defaultLanguageFiles = languageFileMods / "Default Language Files";
+            const auto miscImageMods = modFolder / "Misc Images Mods";
+            const auto defaultMiscImages = miscImageMods / "Default Misc Images";
+            const auto backgroundMods = modFolder / "Background Mods";
+            const auto defaultBackgrounds = backgroundMods / "Default Backgrounds";
 
 
-            // Make backups if the Backup directory does not exist.
-            if (!verifyDirectory(backupDirectory)) {
-
-                // Creates Backup Directory:
-                std::filesystem::create_directory(backupDirectory);
-
-                // Creates Backups of "common_X.xnb" files
-
-                const auto skinDirectory = modFolder / "Skins";
-                const auto backupSkinDirectory = skinDirectory / "Default Skin";
+            // Creates BackupSkin Directory:
+                 // Creates Backups of "common_X.xnb" files
+            if (!verifyDirectory(backupSkinDirectory)) {
+                std::filesystem::create_directory(backupSkinDirectory);
                 for (auto entry : std::filesystem::directory_iterator(contentFolder)) {
                     if (entry.is_regular_file() && entry.path().has_extension()) {
                         std::filesystem::copy(entry, backupSkinDirectory);
                     };
                 };
+            }
+
+            // Backup Catalog files
+            if (!exists(defaultGameplay)) {
+                std::filesystem::create_directory(gameplayMods);
+                std::filesystem::create_directory(defaultGameplay);
+
+                //  Catalog files don't have an extension but are a regular file
+                for (auto entry : std::filesystem::directory_iterator(contentFolder)) {
+                    if (entry.is_regular_file() && !entry.path().has_extension()) {
+                        std::filesystem::copy(entry, defaultGameplay);
+                    }
+                };
+                std::cout << "Backups of Gameplay files created." << std::endl;
+            }
+
+            // Backup Tilesets
+            if (!exists(defaultTilesets)) {
+                std::filesystem::create_directory(tilesetDirectory);
+                std::filesystem::create_directory(defaultTilesets);
+                for (auto entry : std::filesystem::directory_iterator(contentFolder / "Tilesets")) {
+                    std::filesystem::copy(entry, defaultTilesets);
+                }
+                std::cout << "Backups of Tilesets created." << std::endl;
+            }
+
+            // Backup Boss Image Files
+            if (!exists(defaultBosses)) {
+                std::filesystem::create_directory(bossMods);
+                std::filesystem::create_directory(defaultBosses);
+                for (auto entry : std::filesystem::directory_iterator(contentFolder / "Bosses")) {
+                    std::filesystem::copy(entry, defaultBosses);
+                }
+                std::cout << "Backups of Boss sprites created." << std::endl;
+            }
+
+            // Backup Localization files
+            if (!exists(defaultLanguageFiles)) {
+                std::filesystem::create_directory(languageFileMods);
+                std::filesystem::create_directory(defaultLanguageFiles);
+                for (auto entry : std::filesystem::directory_iterator(contentFolder / "Localizations")) {
+                    std::filesystem::copy(entry, defaultLanguageFiles);
+                }
+                std::cout << "Backups of Localization files created." << std::endl;
+            }
+
+            // Backup Misc Files
+            if (!exists(defaultMiscImages)) {
+                std::filesystem::create_directory(miscImageMods);
+                std::filesystem::create_directory(defaultMiscImages);
+                for (auto entry : std::filesystem::directory_iterator(contentFolder / "Doors")) {
+                    std::filesystem::copy(entry, defaultMiscImages);
+                }
+                std::cout << "Backups of Misc Sprites created." << std::endl;
+            }
+
+            // Backup background images
+            if (!exists(defaultBackgrounds)) {
+                std::filesystem::create_directory(backgroundMods);
+                std::filesystem::create_directory(defaultBackgrounds);
+                for (auto entry : std::filesystem::directory_iterator(contentFolder / "Backgrounds")) {
+                    std::filesystem::copy(entry, defaultBackgrounds);
+                }
+                std::cout << "Backups of Background Sprites created." << std::endl;
+            }
 
 
-                // Creates backups of Catalog files
-                const auto generalBackup = modFolder / "Backups";
-                const auto gameplayMods = modFolder / "Gameplay Mods";
-                const auto defaultGameplay = gameplayMods / "Default Gameplay";
-                const auto tilesetDirectory = modFolder / "Tileset Mods";
-                const auto defaultTilesets = tilesetDirectory / "Default Tilesets";
-                const auto bossMods = modFolder / "Boss Mod Images";
-                const auto defaultBosses = bossMods / "Default Bossess";
-                const auto languageFileMods = modFolder / "Language File Mods";
-                const auto defaultLanguageFiles = languageFileMods / "Default Language Files";
-                const auto miscImageMods = modFolder / "Misc Images Mods";
-                const auto defaultMiscImages = miscImageMods / "Default Misc Images";
-                const auto backgroundMods = modFolder / "Background Mods";
-                const auto defaultBackgrounds = backgroundMods / "Default Backgrounds";
-
-
-                if (!exists(generalBackup)) std::filesystem::create_directory(generalBackup);
-                // TODO:
-                // Find out if this is a stupid way to do this. It seems to work at the moment.
+            // Make backup of player save
+            // TODO: Rename save in order to make a timestamped backup each time setup is ran
+            if (!exists(generalBackup)) std::filesystem::create_directory(generalBackup);
+            if (settings.operatingSystem == "Windows") {
                 std::filesystem::path saveDirectory = std::filesystem::temp_directory_path();
                 std::filesystem::path modBringerDirectory = std::filesystem::current_path();
                 std::filesystem::current_path(saveDirectory);
@@ -177,81 +270,23 @@ int main()
                 std::filesystem::copy(std::filesystem::current_path() / "0.sav", generalBackup);
                 std::cout << "Copy of ScourgeBringer save file created.\n";
                 std::filesystem::current_path(modBringerDirectory);
-
-
-
-                // Backup Catalog files
-                if (!exists(defaultGameplay)) {
-                    std::filesystem::create_directory(gameplayMods);
-                    std::filesystem::create_directory(defaultGameplay);
-
-                    //  Catalog files don't have an extension but are a regular file
-                    for (auto entry : std::filesystem::directory_iterator(contentFolder)) {
-                        if (entry.is_regular_file() && !entry.path().has_extension()) {
-                            std::filesystem::copy(entry, defaultGameplay);
-                        }
-                    };
-                    std::cout << "Backups of Gameplay files created." << std::endl;
-                }
-
-                // Backup Tilesets
-                if (!exists(defaultTilesets)) {
-                    std::filesystem::create_directory(tilesetDirectory);
-                    std::filesystem::create_directory(defaultTilesets);
-                    for (auto entry : std::filesystem::directory_iterator(contentFolder / "Tilesets")) {
-                        std::filesystem::copy(entry, defaultTilesets);
-                    }
-                    std::cout << "Backups of Tilesets created." << std::endl;
-                }
-
-                // Backup Boss Image Files
-                if (!exists(defaultBosses)) {
-                    std::filesystem::create_directory(bossMods);
-                    std::filesystem::create_directory(defaultBosses);
-                    for (auto entry : std::filesystem::directory_iterator(contentFolder / "Bosses")) {
-                        std::filesystem::copy(entry, defaultBosses);
-                    }
-                    std::cout << "Backups of Boss sprites created." << std::endl;
-                }
-
-                // Backup Localization files
-                if (!exists(defaultLanguageFiles)) {
-                    std::filesystem::create_directory(languageFileMods);
-                    std::filesystem::create_directory(defaultLanguageFiles);
-                    for (auto entry : std::filesystem::directory_iterator(contentFolder / "Localizations")) {
-                        std::filesystem::copy(entry, defaultLanguageFiles);
-                    }
-                    std::cout << "Backups of Localization files created." << std::endl;
-                }
-
-                // Backup Misc Files
-                if (!exists(defaultMiscImages)) {
-                    std::filesystem::create_directory(miscImageMods);
-                    std::filesystem::create_directory(defaultMiscImages);
-                    for (auto entry : std::filesystem::directory_iterator(contentFolder / "Doors")) {
-                        std::filesystem::copy(entry, defaultMiscImages);
-                    }
-                    std::cout << "Backups of Misc Sprites created." << std::endl;
-                }
-
-                // Backup background images
-                if (!exists(defaultBackgrounds)) {
-                    std::filesystem::create_directory(backgroundMods);
-                    std::filesystem::create_directory(defaultBackgrounds);
-                    for (auto entry : std::filesystem::directory_iterator(contentFolder / "Backgrounds")) {
-                        std::filesystem::copy(entry, defaultBackgrounds);
-                    }
-                    std::cout << "Backups of Background Sprites created." << std::endl;
-                }
-
             }
-
-
+            else if (settings.operatingSystem == "Macintosh") {
+                auto home = getenv("HOME");
+                auto directory = std::filesystem::path{ home };
+                std::filesystem::path saveDirectory = directory / "Library/Application Support/Flying Oak Games/ScourgeBringer";
+                std::filesystem::path modBringerDirectory = std::filesystem::current_path();
+                std::filesystem::current_path(saveDirectory);
+                std::filesystem::copy(std::filesystem::current_path() / "0.sav", generalBackup);
+                std::cout << "Copy of ScourgeBringer save file created.\n";
+                std::filesystem::current_path(modBringerDirectory);
+            }
+            
 
             continue;
 
         } case Options::Modifications: {
-            std::cout << "Option 2 selected.\n\n";
+            std::cout << "Option " << selection << " selected\n";
             if (settings.contentDirectory == "" || !verifyDirectory(settings.contentDirectory / "Mods")) {
                 std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
                     << "!!!Mod directory does not exist. Please perform setup first.!!!\n"
@@ -320,6 +355,12 @@ int main()
                         handleModSelection(settings.contentDirectory, settings.contentDirectory / "Bosses", settings.contentDirectory / "Mods" / "Boss Mod Images" / "Default Bossess", ".xnb", modTypes, modSelection);
                     }
 
+                    // Handle Mod Packs
+                    if (modTypes.at(modSelection) == "Mod Packs") {
+                        // TO DO:
+                        // Figure out how to change and revert Mod Packs easily
+                    }
+
                 }
                 catch (std::exception& e) {
                     std::cout << "Exception: " << e.what();
@@ -329,7 +370,7 @@ int main()
             continue;
 
         } case Options::Maintenance : {
-            std::cout << "Option 3 selected\n";
+            std::cout << "Option " << selection << " selected\n";
 
                 if (settings.contentDirectory == "" || !verifyDirectory(settings.contentDirectory / "Mods")) {
                     std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
@@ -385,18 +426,38 @@ int main()
                     std::string answer;
                     std::cin >> answer;
                     if (answer == "y") {
-                        std::filesystem::path generalBackup = settings.contentDirectory / "Mods" / "Backups";
-                        std::filesystem::path saveDirectory = std::filesystem::temp_directory_path();
-                        std::filesystem::path modBringerDirectory = std::filesystem::current_path();
-                        std::filesystem::current_path(saveDirectory);
-                        std::filesystem::current_path(R"(../../LocalLow/Flying Oak Games/ScourgeBringer)");
-                        auto replaceOptions = std::filesystem::copy_options::overwrite_existing;
-                        if (exists(generalBackup / "0.sav") && exists(std::filesystem::current_path() / "0.sav")) {
-                            std::filesystem::copy(generalBackup / "0.sav", std::filesystem::current_path() / "0.sav", replaceOptions);
-                            std::filesystem::current_path(modBringerDirectory);
-                            std::cout << "Backup restored.\n";
+                        if (settings.operatingSystem == "Windows") {
+                            std::filesystem::path generalBackup = settings.contentDirectory / "Mods" / "Backups";
+                            std::filesystem::path saveDirectory = std::filesystem::temp_directory_path();
+                            std::filesystem::path modBringerDirectory = std::filesystem::current_path();
+                            std::filesystem::current_path(saveDirectory);
+                            std::filesystem::current_path(R"(../../LocalLow/Flying Oak Games/ScourgeBringer)");
+                            auto replaceOptions = std::filesystem::copy_options::overwrite_existing;
+                            if (exists(generalBackup / "0.sav") && exists(std::filesystem::current_path() / "0.sav")) {
+                                std::filesystem::copy(generalBackup / "0.sav", std::filesystem::current_path() / "0.sav", replaceOptions);
+                                std::filesystem::current_path(modBringerDirectory);
+                                std::cout << "Backup restored.\n";
+                            }
                         }
-                        
+                        else if (settings.operatingSystem == "Macintosh") {
+                            auto home = getenv("HOME");
+                            auto directory = std::filesystem::path{ home };
+                            std::filesystem::path generalBackup = settings.contentDirectory / "Mods" / "Backups";
+                            std::filesystem::path modBringerDirectory = std::filesystem::current_path();
+                            std::filesystem::path saveDirectory = directory / "Library/Application Support/Flying Oak Games/ScourgeBringer";
+                            std::filesystem::current_path(saveDirectory);
+
+                            auto replaceOptions = std::filesystem::copy_options::overwrite_existing;
+                            if (exists(generalBackup / "0.sav") && exists(std::filesystem::current_path() / "0.sav")) {
+
+                                std::filesystem::copy(generalBackup / "0.sav", std::filesystem::current_path() / "0.sav", replaceOptions);
+                                std::cout << "Backup restored.\n";
+                                std::filesystem::current_path(modBringerDirectory);
+                            }
+
+                        }
+
+
                     }
                     else {
                         std::cout << "Canceled.\nReturning to main menu.\n\n ";
@@ -463,7 +524,7 @@ int main()
             continue;
         
         } case Options::Help : {
-            std::cout << "Option 4 selected\n";
+            std::cout << "Option " << selection << " selected\n";
             std::cout << "Help topics:\n"
                 << "[0] About ModBringer\n"
                 << "[1] How to Add New Mods\n" 
@@ -535,9 +596,9 @@ void restoreChanged(std::filesystem::path activeDirectory, std::filesystem::path
             if (entry.is_regular_file() && entry.path().extension() == extension) {
                 const auto backupEntry = backupDirectory / entry.path().filename().string();
                 const auto backupTimeStamp = std::filesystem::last_write_time(backupEntry).time_since_epoch();
-                const auto backupTimeMinutes = std::chrono::duration_cast<std::chrono::minutes>(backupTimeStamp).count();
+                //const auto backupTimeMinutes = std::chrono::duration_cast<std::chrono::minutes>(backupTimeStamp).count();
                 const auto entryTimestamp = std::filesystem::last_write_time(entry).time_since_epoch();
-                const auto entryTimestampMinutes = std::chrono::duration_cast<std::chrono::minutes>(entryTimestamp).count();
+                //const auto entryTimestampMinutes = std::chrono::duration_cast<std::chrono::minutes>(entryTimestamp).count();
                 if (entryTimestamp != backupTimeStamp) {
                     std::filesystem::copy(backupEntry, activeDirectory, copyOptions);
                     std::cout << "Restoring: " << backupEntry.filename().string() << "\n";
