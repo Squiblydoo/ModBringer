@@ -151,7 +151,7 @@ int main()
              
 
             }
-
+            std::cout << "1\n";
             const auto contentFolder = settings.contentDirectory;
             const auto modFolder = contentFolder / "Mods";
             const auto modFiles = modBringer_path / "Mods";
@@ -159,10 +159,14 @@ int main()
 
             // If the mod directory exists, we just need to update it with the items in the directory next to ModBringer.
             const auto copyOptions = std::filesystem::copy_options::update_existing | std::filesystem::copy_options::recursive;
-            if (exists(modFiles) && exists(contentFolder)) {
+            try {
                 std::filesystem::copy(modFiles, modFolder, copyOptions);
             }
+            catch (std::exception e) {
+                std::cout << "Exception: Perhaps the mod folder doesn't exist? : " << e.what();
+            }
 
+            std::cout << "2\n";
 
             // Setup for backing up original gamefiles
             const auto backupSkinDirectory = modFolder / "Skins/Default Skin";
@@ -179,6 +183,7 @@ int main()
             const auto defaultMiscImages = miscImageMods / "Default Misc Images";
             const auto backgroundMods = modFolder / "Background Mods";
             const auto defaultBackgrounds = backgroundMods / "Default Backgrounds";
+            const auto modPackFolder = modFolder / "Mod Packs";
 
 
             // Creates BackupSkin Directory:
@@ -257,6 +262,11 @@ int main()
             }
 
 
+            if (!exists(modPackFolder)) {
+                std::filesystem::create_directory(modPackFolder);
+            }
+
+
             // Make backup of player save
             // TODO: Rename save in order to make a timestamped backup each time setup is ran
             if (!exists(generalBackup)) std::filesystem::create_directory(generalBackup);
@@ -278,7 +288,7 @@ int main()
                 std::string timeStampString = "0.sav" + saveTimeStamp.str();
                 std::filesystem::rename(generalBackup / "0.sav", generalBackup / timeStampString);
 
-                std::cout << "Backup of ScourgeBringer save file created as 0.sav" << timeStampString << std::endl;
+                std::cout << "Backup of ScourgeBringer save file created as " << timeStampString << std::endl;
             }
             else if (settings.operatingSystem == "Macintosh") {
                 auto home = getenv("HOME");
@@ -316,7 +326,7 @@ int main()
                 int entryNum{ 0 };
                 std::map<int, std::string> modTypes;
                 int typeNum{ 0 };
-                for (const auto entry : std::filesystem::directory_iterator(settings.contentDirectory / "Mods")) {
+                for (auto entry : std::filesystem::directory_iterator(settings.contentDirectory / "Mods")) {
                     // Exclude the backup folder from the Mod list. It is in this directory for convienance. 
                     if (entry.path().filename().string() == "Backups") continue;
                     if (entry.path().filename().string() == ".DS_Store") continue; // Exclude this file if it occurs on Macintosh
@@ -386,7 +396,7 @@ int main()
                         std::cout << "[" << modNumber << "] ";
                         std::cout << restoreDefault << "\n";
                         modNumber++;
-                        for (const auto entry : std::filesystem::directory_iterator(selectedModDirectory)) {
+                        for (auto entry : std::filesystem::directory_iterator(selectedModDirectory)) {
                             std::cout << "[" << modNumber << "] ";
                             std::cout << entry.path().filename().string() << "\n";
                             modPacks.emplace(modNumber, entry.path().filename().string());
@@ -680,7 +690,7 @@ int main()
 void restoreChanged(std::filesystem::path activeDirectory, std::filesystem::path backupDirectory, std::string extension) {
     try {
         const auto copyOptions = std::filesystem::copy_options::overwrite_existing;
-        for (auto const entry : std::filesystem::directory_iterator(activeDirectory)) {
+        for (auto entry : std::filesystem::directory_iterator(activeDirectory)) {
             if (entry.is_regular_file() && entry.path().extension() == extension) {
                 const auto backupEntry = backupDirectory / entry.path().filename().string();
                 const auto backupTimeStamp = std::filesystem::last_write_time(backupEntry).time_since_epoch();
@@ -736,7 +746,7 @@ void handleModSelection(std::filesystem::path contentPath, std::filesystem::path
     auto selectedModDirectory = contentPath / "Mods" / map.at(userSelection);
     std::map<int, std::string> modListing;
     int modNumber{};
-    for (const auto entry : std::filesystem::directory_iterator(selectedModDirectory)) {
+    for (auto entry : std::filesystem::directory_iterator(selectedModDirectory)) {
         std::cout << "[" << modNumber << "] ";
         std::cout << entry.path().filename().string() << "\n";
         modListing.emplace(modNumber, entry.path().filename().string());
@@ -756,7 +766,7 @@ void handleModSelection(std::filesystem::path contentPath, std::filesystem::path
             restoreChanged(activeFilePath, backupDirectory, fileType); 
             if (selectedMod != backupDirectory) 
             {
-                for (const auto& entry : std::filesystem::directory_iterator{ selectedMod }) {
+                for (auto& entry : std::filesystem::directory_iterator{ selectedMod }) {
                     const auto file = std::filesystem::path(selectedMod / entry);
                     std::filesystem::copy(file, activeFilePath, replaceOptions);
                     std::cout << "Copying: " << file.filename().string() << "\n";
