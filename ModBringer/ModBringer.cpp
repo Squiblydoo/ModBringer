@@ -151,7 +151,6 @@ int main()
              
 
             }
-            std::cout << "1\n";
             const auto contentFolder = settings.contentDirectory;
             const auto modFolder = contentFolder / "Mods";
             const auto modFiles = modBringer_path / "Mods";
@@ -162,11 +161,10 @@ int main()
             try {
                 std::filesystem::copy(modFiles, modFolder, copyOptions);
             }
-            catch (std::exception e) {
-                std::cout << "Exception: Perhaps the mod folder doesn't exist? : " << e.what();
+            catch (std::exception &e) {
+                std::cout << "Perhaps the mod folder doesn't exist or you don't have the proper permissions to write here : " << e.what();
             }
 
-            std::cout << "2\n";
 
             // Setup for backing up original gamefiles
             const auto backupSkinDirectory = modFolder / "Skins/Default Skin";
