@@ -9,10 +9,12 @@ Included Skins:
 - Rel (the character from the ScourgeBringer prequel comicbook)
 - Yung Venus aka YV (from the game Nuclear Throne by Vlambeer)
 - Kyhra-Swordless: https://github.com/camoweed/Scourgebringer-Skins/releases/tag/swordless
+- Crewmate(?) (Among Us): https://github.com/MaximusG29/SusBringer/releases/tag/1.0
+- Jenny (My Life as a Teenage Robot) Created by gibibi
 
 Community Skins:
 - Youmu Konpaku (Touhou): https://github.com/GeneralWziumKenobi/Scourgebringer-Youmu-Skin
-- Crewmate(?) (Among Us): https://github.com/MaximusG29/SusBringer/releases/tag/1.0
+
 
 Tileset Texturepack
 - Touhou Tileset pack - https://github.com/GeneralWziumKenobi/Scourgebringer-Touhou-Tileset-Pack
