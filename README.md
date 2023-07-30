@@ -11,6 +11,7 @@ Included Skins:
 - Kyhra-Swordless: https://github.com/camoweed/Scourgebringer-Skins/releases/tag/swordless
 - Crewmate(?) (Among Us): https://github.com/MaximusG29/SusBringer/releases/tag/1.0
 - Jenny (My Life as a Teenage Robot) Created by gibibi
+- Peppy (ScourgeBringer) Created by [StudioVDS](https://www.youtube.com/@Studio_VDS)
 
 Community Skins:
 - Youmu Konpaku (Touhou): https://github.com/GeneralWziumKenobi/Scourgebringer-Youmu-Skin
