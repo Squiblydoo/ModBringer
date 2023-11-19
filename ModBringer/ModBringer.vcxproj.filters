@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="TURKCEGETIREN.cpp">
+    <ClCompile Include="ModBringer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
