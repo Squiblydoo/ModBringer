@@ -1,5 +1,6 @@
 # ModBringer
 ![modbringer](https://github.com/Squiblydoo/ModBringer/assets/77356206/43fe5eb0-66bf-4865-9031-0949a310a4f6.png)
+<br>
 (Logo by Hugo the Waffle)
 
 ## New
