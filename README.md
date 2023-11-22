@@ -1,7 +1,5 @@
 # ModBringer
-
-![Modbringer logo](https://github.com/Squiblydoo/ModBringer/assets/77356206/2b49d528-bf3f-42fc-9ce6-e360c8223e4a)
-
+![modbringer](https://github.com/Squiblydoo/ModBringer/assets/77356206/fe86a99e-762c-4f0e-98f6-34f9b8c2d19d)
 
 ModBringer a Mod Loader for the game ScourgeBringer by Flying Oak Games. Check out the rules for modding ScourgeBringer here: https://steamcommunity.com/games/1037020/announcements/detail/3012317192167588072
 
