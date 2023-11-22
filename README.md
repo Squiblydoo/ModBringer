@@ -1,4 +1,7 @@
 # ModBringer
+![modbringer](https://github.com/Squiblydoo/ModBringer/assets/77356206/43fe5eb0-66bf-4865-9031-0949a310a4f6.png)
+(Logo by Hugo the Waffle)
+
 ## New
 If you want to play the game in Turkish check out [TÜRKÇEGETİREN](https://github.com/Squiblydoo/TURKCEGETIREN) and read more about it below.
 
