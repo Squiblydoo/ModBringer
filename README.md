@@ -1,4 +1,8 @@
 # ModBringer
+
+![Modbringer logo](https://github.com/Squiblydoo/ModBringer/assets/77356206/2b49d528-bf3f-42fc-9ce6-e360c8223e4a)
+
+
 ModBringer a Mod Loader for the game ScourgeBringer by Flying Oak Games. Check out the rules for modding ScourgeBringer here: https://steamcommunity.com/games/1037020/announcements/detail/3012317192167588072
 
 ModBringer provides an interface for managing community made Skins/Texture and Game Catalog files. 
@@ -15,7 +19,6 @@ Included Skins:
 
 Community Skins:
 - Youmu Konpaku (Touhou): https://github.com/GeneralWziumKenobi/Scourgebringer-Youmu-Skin
-
 
 Tileset Texturepack
 - Touhou Tileset pack - https://github.com/GeneralWziumKenobi/Scourgebringer-Touhou-Tileset-Pack
