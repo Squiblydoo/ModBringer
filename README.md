@@ -32,9 +32,9 @@ Tileset Texturepack
 ModBringer is currently only compatible with Windows, but it is planned to be compatible with other operating systems.
 
 # Usage
-1. Download the latest release (e.g Windowsx86-ModBringer-Release.zip) https://github.com/Squiblydoo/ModBringer/releases/
+1. Download the latest release for your operating system: https://github.com/Squiblydoo/ModBringer/releases/
 2. Unzip the files.
-3. Run "Modbringer.exe"
+3. Run "Modbringer.exe", or on Linux, in a terminal run `.\modbringer`
 4. Select Setup option.
 5. Select desired skin option.
 6. Launch game and use selected skin.
