@@ -182,6 +182,8 @@ int main()
             const auto backgroundMods = modFolder / "Background Mods";
             const auto defaultBackgrounds = backgroundMods / "Default Backgrounds";
             const auto modPackFolder = modFolder / "Mod Packs";
+            const auto moddedFonts = modFolder / "Modded Fonts";
+            const auto defaultFonts = moddedFonts / "Default Fonts";
 
 
             // Creates BackupSkin Directory:
@@ -255,6 +257,16 @@ int main()
                 std::filesystem::create_directory(defaultBackgrounds);
                 for (auto entry : std::filesystem::directory_iterator(contentFolder / "Backgrounds")) {
                     std::filesystem::copy(entry, defaultBackgrounds);
+                }
+                std::cout << "Backups of Background Sprites created." << std::endl;
+            }
+
+            // Backup font files
+            if (!exists(defaultFonts)) {
+                std::filesystem::create_directory(moddedFonts);
+                std::filesystem::create_directory(defaultFonts);
+                for (auto entry : std::filesystem::directory_iterator(contentFolder / "Fonts")) {
+                    std::filesystem::copy(entry, defaultFonts);
                 }
                 std::cout << "Backups of Background Sprites created." << std::endl;
             }
@@ -461,13 +473,23 @@ int main()
                                         if (fileStart == "bac") {
                                             std::filesystem::copy(entry, settings.contentDirectory / "Backgrounds", replaceOptions);
                                             std::cout << "Copying: " << entry.path().filename().string() << "\n";
+
                                         }
+                                        // Account for font files
+                                        if (fileStart == "pix" ||
+                                            fileStart == "hig"
+                                            ) {
+                                            std::filesystem::copy(entry, settings.contentDirectory / "Fonts", replaceOptions);
+                                            std::cout << "Copying: " << entry.path().filename().string() << "\n";
+                                        }
+
                                         // Account for localization mods. The names all differ but are only 2 char in length
                                         if (entry.path().filename().string().length() == 2) { 
                                             std::filesystem::copy(entry, settings.contentDirectory / "Localizations", replaceOptions);
                                             std::cout << "Copying: " << entry.path().filename().string() << "\n";
                                         }
-                                        
+
+
                                     }
                                 };
                             }
@@ -697,7 +719,7 @@ void restoreChanged(std::filesystem::path activeDirectory, std::filesystem::path
                 //const auto entryTimestampMinutes = std::chrono::duration_cast<std::chrono::minutes>(entryTimestamp).count();
                 if (entryTimestamp != backupTimeStamp) {
                     std::filesystem::copy(backupEntry, activeDirectory, copyOptions);
-                    std::cout << "Restoring: " << backupEntry.filename().string() << "\n";
+                    std::cout << "---Restoring: " << backupEntry.filename().string() << "\n";
                 }
             }
         }
@@ -723,6 +745,8 @@ void restoreAll(std::filesystem::path contentDirectory) {
     restoreChanged(contentDirectory / "Localizations", contentDirectory / "Mods" / "Language File Mods" / "Default Language Files", "");
     std::cout << "Restoring changed Bosses\n";
     restoreChanged(contentDirectory / "Bosses", contentDirectory / "Mods" / "Boss Mod Images" / "Default Bossess", ".xnb");
+    std::cout << "Restoring Fonts\n";
+    restoreChanged(contentDirectory / "Fonts", contentDirectory / "Mods" / "Modded Fonts" / "Default Fonts", ".xnb");
 }
 
 bool verifyDirectory(std::filesystem::path directory) {
