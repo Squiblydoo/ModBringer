@@ -244,6 +244,9 @@ int main()
                     if (entry.is_regular_file() && !entry.path().has_extension()) {
                         std::filesystem::copy(entry, defaultGameplay);
                     }
+                    if (entry.path().extension() == ".ini") {
+                        std::filesystem::copy(entry, defaultGameplay);
+                    }
                 };
                 std::cout << "Backups of Gameplay files created." << std::endl;
             }
@@ -498,7 +501,8 @@ int main()
                                             fileStart == "Ene" ||
                                             fileStart == "Map" ||
                                             fileStart == "Par" ||
-                                            fileStart == "Roo"
+                                            fileStart == "Roo" ||
+                                            fileStart == "Gam"
                                             ) {
                                             std::filesystem::copy(entry, settings.contentDirectory , replaceOptions);
                                             std::cout << "Copying: " << entry.path().filename().string() << "\n";
@@ -538,7 +542,7 @@ int main()
                                         }
 
                                         // Account for localization mods. The names all differ but are only 2 char in length
-                                        if (entry.path().filename().string().length() == 2) { 
+                                        if (entry.path().filename().string().length() == 2 || entry.path().filename().string().length() == 3) {
                                             std::filesystem::copy(entry, settings.contentDirectory / "Localizations", replaceOptions);
                                             std::cout << "Copying: " << entry.path().filename().string() << "\n";
                                         }
