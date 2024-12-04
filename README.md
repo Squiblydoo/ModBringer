@@ -50,6 +50,12 @@ ModBringer is currently only compatible with Windows, but it is planned to be co
 If at any time, you have unexpected difficulty loading skins or the game, please use Steam to verify game files and restore game files. 
 ModBringer backs up the default skins for safe keeping, but something could still go wrong.
 
+This is a video of using ModBringer to configure for the Weapons and Blood modpack:
+
+https://github.com/user-attachments/assets/9d16642d-b9fa-4ac0-b3c3-1ca89abca7f2
+
+
+
 # Adding your own modifications (Advanced Users)
 If you want to add your own skin to the launcher for personal use, follow this procedure.
 1. Create a folder in the "Skins" folder in the "Mod" folder next to where you saved ModBringer.exe.
