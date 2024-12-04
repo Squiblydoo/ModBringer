@@ -797,6 +797,7 @@ void restoreChanged(std::filesystem::path activeDirectory, std::filesystem::path
 void restoreAll(std::filesystem::path contentDirectory) {
     std::cout << "Restoring Gameplay files \n";
     restoreChanged(contentDirectory, contentDirectory / "Mods" / "Gameplay Mods" / "Default Gameplay", "");
+    restoreChanged(contentDirectory, contentDirectory / "Mods" / "Gameplay Mods" / "Default Gameplay", ".ini");
     std::cout << "Restoring Tilesets \n";
     restoreChanged(contentDirectory / "Tilesets", contentDirectory / "Mods" / "Tileset Mods" / "Default Tilesets", ".xnb");
     std::cout << "Restoring changed Skins\n";
