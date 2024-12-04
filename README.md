@@ -14,6 +14,7 @@ ModBringer provides an interface for managing community made Skins/Texture and G
 ### Included ModPacks
 #### Weapons and Blood (created by Dynaboom4)
 Weapons and Blood is a mod that reworks the weapon and blood systems of the game. 
+See trailer for this mod: [https://www.youtube.com/watch?v=L0JWUo-Ix84](https://www.youtube.com/watch?v=L0JWUo-Ix84)
 
 #### Rel mod (created by Squiblydoo)
 This mod allows the player to play as the prequel comicbook character, Rel. Has new realms, new enemies, new guardian and more.
