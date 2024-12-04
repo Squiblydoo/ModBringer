@@ -1,4 +1,12 @@
 # ModBringer
+![modbringer](https://github.com/Squiblydoo/ModBringer/assets/77356206/43fe5eb0-66bf-4865-9031-0949a310a4f6.png)
+<br>
+(Logo by Hugo the Waffle)
+
+## New
+If you want to play the game in Turkish check out [TÜRKÇEGETİREN](https://github.com/Squiblydoo/TURKCEGETIREN) and read more about it below.
+
+# Overview
 ModBringer a Mod Loader for the game ScourgeBringer by Flying Oak Games. Check out the rules for modding ScourgeBringer here: https://steamcommunity.com/games/1037020/announcements/detail/3012317192167588072
 
 ModBringer provides an interface for managing community made Skins/Texture and Game Catalog files. 
@@ -16,7 +24,6 @@ Included Skins:
 Community Skins:
 - Youmu Konpaku (Touhou): https://github.com/GeneralWziumKenobi/Scourgebringer-Youmu-Skin
 
-
 Tileset Texturepack
 - Touhou Tileset pack - https://github.com/GeneralWziumKenobi/Scourgebringer-Touhou-Tileset-Pack
 
@@ -25,9 +32,9 @@ Tileset Texturepack
 ModBringer is currently only compatible with Windows, but it is planned to be compatible with other operating systems.
 
 # Usage
-1. Download the latest release (e.g Windowsx86-ModBringer-Release.zip) https://github.com/Squiblydoo/ModBringer/releases/
+1. Download the latest release for your operating system: https://github.com/Squiblydoo/ModBringer/releases/
 2. Unzip the files.
-3. Run "Modbringer.exe"
+3. Run "Modbringer.exe", or on Linux, in a terminal run `.\modbringer`
 4. Select Setup option.
 5. Select desired skin option.
 6. Launch game and use selected skin.
@@ -47,6 +54,10 @@ ModBringer now backs up the appropriate files for all modding categories and han
 ModBringer now has maintenance options.
 
 Minor Update: I updated the skins in the Repository but not in the release. These updated skins are identical graphically, but they use MGCB (MonoGame Content Builder) for compressing the XNB for use by the game. We had previously been using https://github.com/LeonBlade/xnbcli, but the XNB files were usually 16K KB. With MGCB they are ~200 KB in size.
+
+# [TÜRKÇEGETİREN](https://github.com/Squiblydoo/TURKCEGETIREN)
+TÜRKÇEGETİREN (TurkishBringer) is a separate program which allows you to play ScourgeBringer in Turkish. It is not compatible with other skins but can be used with gameplay mods. 
+The tool itself was created by Squiblydoo and the translation/sprite edits were done by Hugo the Waffle. Hugo also translated TÜRKÇEGETİREN into Turkish. 
 
 # Contributing
 If you would like to contribute to ModBringer with content such as Skins and Mods to the offical releases, please issue a request through Github, join the ScourgeBringer Discord, or contact me (Squiblydoo).

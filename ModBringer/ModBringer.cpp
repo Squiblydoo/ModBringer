@@ -52,10 +52,14 @@ int main()
 
     // Detect Operating System
     Settings settings;
-#ifdef _WIN32 || _WIN64
+#ifdef _WIN64
     settings.operatingSystem = "Windows";
 #elif __APPLE__ || __MACH__
     settings.operatingSystem = "Macintosh";
+#elif __linux__
+    settings.operatingSystem = "Linux";
+#elif __unix__
+    settings.operatingSystem = "Linux";
 #endif
 
     int selection;
@@ -147,6 +151,39 @@ int main()
                     }
                 
                 }
+                else if (settings.operatingSystem == "Linux") {
+                    auto home = std::getenv("HOME");
+                    auto directory = std::filesystem::path{ home };
+                    std::filesystem::path defaultLinuxPath = directory / ".steam/steam/steamapps/common/ScourgeBringer/";
+
+                    if (verifyDirectory(defaultLinuxPath)) {
+                        std::filesystem::path contentFolder = defaultLinuxPath / "Content";
+                        contentFolder.make_preferred();
+                        std::ofstream config{ "ModBringer.config", std::ios::out | std::ios::in | std::ios::trunc };
+                        config << defaultLinuxPath << std::endl;
+                        settings.gameDirectory = defaultLinuxPath;
+                        settings.contentDirectory = contentFolder;
+                        settings.operatingSystem = "Linux";
+                    }   
+                    else {
+                        std::string userProvidedGameDirectory;
+                        std::filesystem::path userProvidedPath;
+
+                        do {
+                            std::cout << "Game files could not be found.\nIf the game is installed, please specify the game directory:\nExample:\n.steam/steam/steamapps/common/ScourgeBringer/";
+                            std::cin.ignore(100, '\n');
+                            getline(std::cin, userProvidedGameDirectory);
+                            userProvidedPath = userProvidedGameDirectory;
+                        } while (!verifyDirectory(userProvidedPath));
+                        std::filesystem::path contentFolder = userProvidedPath;
+                        std::ofstream config{ "ModBringer.config", std::ios::out | std::ios::in | std::ios::trunc };
+                        config << contentFolder << std::endl;
+                        settings.gameDirectory = userProvidedPath;
+                        settings.contentDirectory = contentFolder;
+                        std::cout << "Saving game Directory\n";
+                    };
+
+                }
                
              
 
@@ -167,7 +204,7 @@ int main()
 
 
             // Setup for backing up original gamefiles
-            const auto backupSkinDirectory = modFolder / "Skins/Default Skin";
+            const auto backupSkinDirectory = modFolder / "Skins/DefaultSkin";
             const auto generalBackup = modFolder / "Backups";
             const auto gameplayMods = modFolder / "Gameplay Mods";
             const auto defaultGameplay = gameplayMods / "Default Gameplay";
@@ -316,6 +353,23 @@ int main()
 
                 std::cout << "Backup of ScourgeBringer save file created as " << timeStampString << std::endl;
             }
+                else if (settings.operatingSystem == "Linux") {
+                auto home = getenv("HOME");
+                auto directory = std::filesystem::path{ home };
+                std::filesystem::path tempDirectoryForSave = directory / ".scourgebringer";
+                std::filesystem::current_path(tempDirectoryForSave);
+                std::filesystem::copy(std::filesystem::current_path() / "0.sav", generalBackup, backupCopyOptions);
+               
+                //Rename save with timestamp.
+                std::stringstream saveTimeStamp{};
+                const time_t timenow = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+                saveTimeStamp << std::put_time(std::localtime(&timenow), "%F-%H%M");
+                std::string timeStampString = "0.sav" + saveTimeStamp.str();
+                std::filesystem::rename(generalBackup / "0.sav", generalBackup / timeStampString);
+
+                std::cout << "Backup of ScourgeBringer save file created as " << timeStampString << std::endl;
+            }
+
             // Return working directory to previous directory
             std::filesystem::current_path(modBringerDirectory);
 
@@ -369,7 +423,7 @@ int main()
 
                     // Handle Skin Selection
                     if (modTypes.at(modSelection) == "Skins") {
-                        handleModSelection(settings.contentDirectory, settings.contentDirectory, settings.contentDirectory / "Mods" / "Skins" / "Default Skin", ".xnb", modTypes, modSelection);
+                        handleModSelection(settings.contentDirectory, settings.contentDirectory, settings.contentDirectory / "Mods" / "Skins" / "DefaultSkin", ".xnb", modTypes, modSelection);
                     }
 
                     // Handle Background Mods
@@ -578,6 +632,12 @@ int main()
                             std::filesystem::path saveDirectory = directory / "Library/Application Support/Flying Oak Games/ScourgeBringer";
                             std::filesystem::current_path(saveDirectory);
                         }
+                        else if (settings.operatingSystem == "Linux") {
+                            auto home = getenv("HOME");
+                            auto directory = std::filesystem::path{ home };
+                            std::filesystem::path saveDirectory = directory / ".scourgebringer";
+                            std::filesystem::current_path(saveDirectory);
+                        }
                         try {
 
                             if (exists(generalBackup / backups.at(backupSelection)) && exists(std::filesystem::current_path() / "0.sav")) {
@@ -736,7 +796,7 @@ void restoreAll(std::filesystem::path contentDirectory) {
     std::cout << "Restoring Tilesets \n";
     restoreChanged(contentDirectory / "Tilesets", contentDirectory / "Mods" / "Tileset Mods" / "Default Tilesets", ".xnb");
     std::cout << "Restoring changed Skins\n";
-    restoreChanged(contentDirectory, contentDirectory / "Mods" / "Skins" / "Default Skin", ".xnb");
+    restoreChanged(contentDirectory, contentDirectory / "Mods" / "Skins" / "DefaultSkin", ".xnb");
     std::cout << "Restoring changed backgrounds\n";
     restoreChanged(contentDirectory / "Backgrounds",contentDirectory / "Mods" / "Background Mods" / "Default Backgrounds", ".xnb");
     std::cout << "Restoring changed Misc Images\n";
