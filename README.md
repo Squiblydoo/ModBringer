@@ -11,7 +11,14 @@ ModBringer a Mod Loader for the game ScourgeBringer by Flying Oak Games. Check o
 
 ModBringer provides an interface for managing community made Skins/Texture and Game Catalog files. 
 
-The skins below are compatible with ScourgeBringer v1.52
+### Included ModPacks
+#### Weapons and Blood (created by Dynaboom4)
+Weapons and Blood is a mod that reworks the weapon and blood systems of the game. 
+See trailer for this mod: [https://www.youtube.com/watch?v=L0JWUo-Ix84](https://www.youtube.com/watch?v=L0JWUo-Ix84)
+
+#### Rel mod (created by Squiblydoo)
+This mod allows the player to play as the prequel comicbook character, Rel. Has new realms, new enemies, new guardian and more.
+Mod is not well polished, but shows capability of modding tool.
 
 Included Skins:
 - Rel (the character from the ScourgeBringer prequel comicbook)
@@ -20,6 +27,8 @@ Included Skins:
 - Crewmate(?) (Among Us): https://github.com/MaximusG29/SusBringer/releases/tag/1.0
 - Jenny (My Life as a Teenage Robot) Created by gibibi
 - Peppy (ScourgeBringer) Created by [StudioVDS](https://www.youtube.com/@Studio_VDS)
+
+The skins below are compatible with ScourgeBringer v1.52. There may be some inconsistencies in newer or older versions, but this is largely unknown.
 
 Community Skins:
 - Youmu Konpaku (Touhou): https://github.com/GeneralWziumKenobi/Scourgebringer-Youmu-Skin
@@ -42,18 +51,18 @@ ModBringer is currently only compatible with Windows, but it is planned to be co
 If at any time, you have unexpected difficulty loading skins or the game, please use Steam to verify game files and restore game files. 
 ModBringer backs up the default skins for safe keeping, but something could still go wrong.
 
+This is a video of using ModBringer to configure for the Weapons and Blood modpack:
+
+https://github.com/user-attachments/assets/9d16642d-b9fa-4ac0-b3c3-1ca89abca7f2
+
+
+
 # Adding your own modifications (Advanced Users)
 If you want to add your own skin to the launcher for personal use, follow this procedure.
 1. Create a folder in the "Skins" folder in the "Mod" folder next to where you saved ModBringer.exe.
 2. Put your an "xnb" file named identically to the Sprite sheet you are replacing.
 3. Run ModBringer option 2 "Setup/Update". This will copy the files where they need to go.
 4. Your new skin should now appear in the propper ModBringer menu.
-
-# ModBringer 1.1 Update
-ModBringer now backs up the appropriate files for all modding categories and handles all modding categories.
-ModBringer now has maintenance options.
-
-Minor Update: I updated the skins in the Repository but not in the release. These updated skins are identical graphically, but they use MGCB (MonoGame Content Builder) for compressing the XNB for use by the game. We had previously been using https://github.com/LeonBlade/xnbcli, but the XNB files were usually 16K KB. With MGCB they are ~200 KB in size.
 
 # [TÜRKÇEGETİREN](https://github.com/Squiblydoo/TURKCEGETIREN)
 TÜRKÇEGETİREN (TurkishBringer) is a separate program which allows you to play ScourgeBringer in Turkish. It is not compatible with other skins but can be used with gameplay mods. 
